@@ -1,3 +1,4 @@
+(eval-when-compile (require 'org-install))
 ;; Turn on diary within org-mode
 (setq org-agenda-include-diary t)
 ;; Restore window on quit agenda

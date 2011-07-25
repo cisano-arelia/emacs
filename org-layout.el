@@ -1,3 +1,4 @@
+(eval-when-compile (require 'org-install))
 ;; indent
 (setq org-startup-indented t)
 ;; hide stars

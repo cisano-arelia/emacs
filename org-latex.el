@@ -1,3 +1,4 @@
+(eval-when-compile (require 'org-install))
 ;; set beamer/letter latex export
 ;; #+LaTeX_CLASS: beamer in org files
 (unless (boundp 'org-export-latex-classes)

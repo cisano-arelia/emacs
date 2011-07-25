@@ -1,3 +1,4 @@
+(eval-when-compile (require 'org-install))
 ;; Turn on Capture
 (setq org-default-notes-file gtd-file-nextactions)
 ;; Capture templates
