@@ -6,11 +6,11 @@
 (eval-after-load "org-install"
   '(progn
      ;; load org module files
-     (load-library "org-files")
-     (load-library "org-layout")
-     (load-library "org-agenda")
-     (load-library "org-capture")
-     (load-library "org-latex")
+     (load-library "~/emacs/org-files")
+     (load-library "~/emacs/org-layout")
+     (load-library "~/emacs/org-agenda")
+     (load-library "~/emacs/org-capture")
+     (load-library "~/emacs/org-latex")
      ;; Shortcuts voor org
      (global-set-key "\C-cl" 'org-store-link)
      (global-set-key "\C-cc" 'org-capture)
