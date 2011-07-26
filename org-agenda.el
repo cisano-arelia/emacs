@@ -7,4 +7,5 @@
 (setq org-agenda-files (list gtd-file-nextactions
 			     gtd-file-projects
 			     gtd-file-anniversaries
-			     gtd-file-someday))	
+			     gtd-file-someday
+			     gtd-file-calendar))	

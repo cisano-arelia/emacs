@@ -11,6 +11,7 @@
      (load-library "~/emacs/org-agenda")
      (load-library "~/emacs/org-capture")
      (load-library "~/emacs/org-latex")
+     (load-library "~/emacs/org-babel")
      ;; Shortcuts voor org
      (global-set-key "\C-cl" 'org-store-link)
      (global-set-key "\C-cc" 'org-capture)
@@ -36,6 +37,7 @@
 	   '((sequence "TAAK(t)" "|" "UITGEVOERD(u)")
 	     (sequence "WACHT(w)" "|")
 	     (sequence "NIEUW(n)" "|")
+	     (sequence "AFSPRAAK(f)" "|")
 	     (sequence "BELLEN(b)" "|")
 	     (sequence "PROJECT(p)" "|" "AFGEROND(r)")
 	     (sequence "|" "GEANNULEERD(a)")
