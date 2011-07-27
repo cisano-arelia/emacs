@@ -8,7 +8,7 @@
 ;; Don't show scheduled if done
 ;;(org-agenda-skip-scheduled-if-done t)
 ;; Announce deadlines 7 days ahead
-;;(org-deadline-warning-days 7)
+(org-deadline-warning-days 7)
 ;; Set files for agenda views
 (setq org-agenda-files (list gtd-file-nextactions
 			     gtd-file-projects

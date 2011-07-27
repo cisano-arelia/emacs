@@ -1,5 +1,6 @@
 ;; load path
 (add-to-list 'load-path "~/emacs/contrib/org/lisp")
+(add-to-list 'load-path "~/emacs/contrib/scrlttr2")
 ;; load org-mode
 (require 'org-install)
 ;; delay loading till org-install is loaded
@@ -12,6 +13,9 @@
      (load-library "~/emacs/org-capture")
      (load-library "~/emacs/org-latex")
      (load-library "~/emacs/org-babel")
+     ;; scrlttr2 support
+     ;;(require 'org-isodoc)
+     ;;(require 'org-scrlttr2)
      ;; Shortcuts voor org
      (global-set-key "\C-cl" 'org-store-link)
      (global-set-key "\C-cc" 'org-capture)
