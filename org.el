@@ -14,8 +14,8 @@
      (load-library "~/emacs/org-latex")
      (load-library "~/emacs/org-babel")
      ;; scrlttr2 support
-     ;;(require 'org-isodoc)
-     ;;(require 'org-scrlttr2)
+     (require 'org-isodoc)
+     (require 'org-scrlttr2)
      ;; Shortcuts voor org
      (global-set-key "\C-cl" 'org-store-link)
      (global-set-key "\C-cc" 'org-capture)
