@@ -1,14 +1,14 @@
 ;; require main org config
 (require 'conf-org)
-;; load path
-(add-to-list 'load-path "~/emacs/contrib/scrlttr2")
-;; set beamer/letter latex export
-;; #+LaTeX_CLASS: beamer in org files
-(unless (boundp 'org-export-latex-classes)
-  (setq org-export-latex-classes nil))
-(add-to-list 'org-export-latex-classes
-  '("beamer"
-     "\\documentclass[11pt]{beamer}\n
+;; delay loading till org-conf is loaded
+(eval-after-load "conf-org"
+  '(progn
+     ;; set beamer/article latex export
+     (unless (boundp 'org-export-latex-classes)
+       (setq org-export-latex-classes nil))
+     (add-to-list 'org-export-latex-classes
+		  '("beamer"
+		    "\\documentclass[11pt]{beamer}\n
       \\mode<{{{beamermode}}}>\n
       \\usetheme{{{{beamertheme}}}}\n
       \\usecolortheme{{{{beamercolortheme}}}}\n
@@ -30,16 +30,16 @@
       \\usepackage{verbatim}\n
       \\institute{{{{beamerinstitute}}}}\n          
        \\subject{{{{beamersubject}}}}\n"
-
-     ("\\section{%s}" . "\\section*{%s}")
-     
-     ("\\begin{frame}[fragile]\\frametitle{%s}"
-       "\\end{frame}"
-       "\\begin{frame}[fragile]\\frametitle{%s}"
-       "\\end{frame}")))
-(add-to-list 'org-export-latex-classes
-   '("article"
-     "\\documentclass[11pt,a4paper,twoside,twocolumn]{article}\n
+		    
+		    ("\\section{%s}" . "\\section*{%s}")
+		    
+		    ("\\begin{frame}[fragile]\\frametitle{%s}"
+		     "\\end{frame}"
+		     "\\begin{frame}[fragile]\\frametitle{%s}"
+		     "\\end{frame}")))
+     (add-to-list 'org-export-latex-classes
+		  '("article"
+		    "\\documentclass[11pt,a4paper,twoside,twocolumn]{article}\n
 \\usepackage[a4paper]{geometry}\n
 \\geometry{top=1.0cm, bottom=1.0cm, left=1.0cm, right=1.0cm}\n
 \\setlength{\\columnseprule}{1pt}\n
@@ -48,15 +48,16 @@
 \\usepackage[hyperref,x11names]{xcolor}\n
 \\usepackage[colorlinks=true,urlcolor=SteelBlue4,linkcolor=Firebrick4]{hyperref}\n
 "
-     ("\\section{%s}" . "\\section*{%s}")
-     ("\\subsection{%s}" . "\\subsection*{%s}")
-     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-     ("\\paragraph{%s}" . "\\paragraph*{%s}")
-     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-;; load path
-(add-to-list 'load-path "~/emacs/contrib/scrlttr2")
-;; scrlttr2 support
-(require 'org-isodoc)
-(require 'org-scrlttr2)
+		    ("\\section{%s}" . "\\section*{%s}")
+		    ("\\subsection{%s}" . "\\subsection*{%s}")
+		    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		    ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		    ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+     ;; load path
+     (add-to-list 'load-path "~/emacs/contrib/scrlttr2")
+     ;; scrlttr2 support
+     (require 'org-isodoc)
+     (require 'org-scrlttr2)
+     ))
 ;; provide
 (provide 'conf-org-latex)
