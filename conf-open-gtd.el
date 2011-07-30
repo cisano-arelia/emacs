@@ -12,6 +12,10 @@
        (delete-other-windows)
        )
      (global-set-key (kbd "C-c g") 'gtd)
+     (find-file gtd-file-journal)
+     (find-file gtd-file-calendar)
+     (find-file gtd-file-projects)
+     (find-file gtd-file-nextactions)
      (gtd)
      ))
 ;; provide
