@@ -1252,7 +1252,7 @@ numbered sections and lower levels as unnumbered sections."
 	  (setq start (if num (car sec) (cdr sec))))
 	(insert (format start (if main-heading main-heading heading)
 			(or sub-heading "")))
-	(insert	"\n")
+	;;(insert	"\n")
 	(when label
 	  (insert (mapconcat (lambda (l) (format "\\label{%s}" l))
 			     label-list "\n") "\n"))
