@@ -3,6 +3,8 @@
 ;; delay loading till org-conf is loaded
 (eval-after-load "conf-org"
   '(progn
+     ;; allow bind
+     (setq org-export-allow-BIND t)
      ;; set beamer/article latex export
      (unless (boundp 'org-export-latex-classes)
        (setq org-export-latex-classes nil))

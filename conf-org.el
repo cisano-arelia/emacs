@@ -1,5 +1,5 @@
 ;; load path
-(add-to-list 'load-path "~/emacs/contrib/org-7.7/lisp")
+(add-to-list 'load-path "~/emacs/contrib/org/lisp")
 ;; fix files
 (require 'conf-org-files)
 ;; load org-mode

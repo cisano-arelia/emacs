@@ -1,7 +1,7 @@
 EMACS=emacs
 BATCH=$(EMACS) -batch -q -no-site-file
 LOADPATH=-L contrib/color-theme \
--L contrib/org-7.7/lisp \
+-L contrib/org/lisp \
 -L contrib/rainbow-delimiters \
 -L contrib/redoplus \
 -L contrib/scrlttr2 \

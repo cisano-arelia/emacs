@@ -1,6 +1,6 @@
-(require 'conf-org)
+(require 'conf-org-files)
 ;; delay loading till org-conf is loaded
-(eval-after-load "conf-org"
+(eval-after-load "conf-org-files"
   '(progn
      ;; open GTD index as default
      (defun gtd ()
@@ -12,10 +12,6 @@
        (delete-other-windows)
        )
      (global-set-key (kbd "C-c g") 'gtd)
-     (find-file gtd-file-journal)
-     (find-file gtd-file-calendar)
-     (find-file gtd-file-projects)
-     (find-file gtd-file-nextactions)
      (gtd)
      ))
 ;; provide
