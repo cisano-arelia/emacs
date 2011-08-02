@@ -15,7 +15,7 @@
 (defcustom org-latex-generic-scrlttr2-setup  
   "
 #+LaTeX_CLASS: scrlttr2
-#+LaTeX_CLASS_OPTIONS: [DIN]
+#+LaTeX_CLASS_OPTIONS: [DIN,pdj]
 #+OPTIONS: toc:nil
 "
   "Meta lines for scrlttr2 class. Plug in your LCO file."

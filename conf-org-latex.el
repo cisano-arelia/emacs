@@ -5,6 +5,8 @@
   '(progn
      ;; allow bind
      (setq org-export-allow-BIND t)
+     ;; open LCO as latex
+     (add-to-list 'auto-mode-alist '("\\.lco$" . latex-mode))
      ;; set beamer/article latex export
      (unless (boundp 'org-export-latex-classes)
        (setq org-export-latex-classes nil))
