@@ -5,6 +5,10 @@
   '(progn
      ;; allow bind
      (setq org-export-allow-BIND t)
+     ;; use xetex
+     (setq org-latex-to-pdf-process 
+	   '("xelatex -interaction nonstopmode %f"
+	     "xelatex -interaction nonstopmode %f")) ;; for multiple passes
      ;; open LCO as latex
      (add-to-list 'auto-mode-alist '("\\.lco$" . latex-mode))
      ;; set beamer/article latex export

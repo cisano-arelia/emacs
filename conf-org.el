@@ -1,11 +1,13 @@
 ;; load path
 (add-to-list 'load-path "~/emacs/contrib/org/lisp")
+;; org extension
+(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 ;; fix files
 (require 'conf-org-files)
 ;; load org-mode
 (require 'org-install)
 ;; delay loading till org-install is loaded
-(eval-after-load "org-install"
+(eval-after-load "org"
   '(progn
      ;; Shortcuts voor org
      (global-set-key "\C-cl" 'org-store-link)
@@ -16,8 +18,6 @@
      (setq org-support-shift-select t)
      ;; Set timestamp when TODO => DONE
      (setq org-log-done t)
-     ;; org extension
-     (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
      ;; set archive location
      (defadvice org-extract-archive-file (after org-to-ref activate)
        (setq ad-return-value
@@ -26,7 +26,7 @@
      (setq org-tag-alist '((:startgroup . nil)
 			   ("WERK" . ?w) ("THUIS" . ?t) ("WINKEL" . ?i)
 			   (:endgroup . nil)
-			   ("AGRI" . ?a) ("PRAEMIS" . ?p) ("PRAEVENTIS" . ?l) ("RVP" . ?r)))
+			   ("AGRI" . ?a) ("RIVM" . ?r) ))
      ;; actie statussen
      (setq org-todo-keywords
 	   '((sequence "TAAK(t)" "|" "UITGEVOERD(u)")

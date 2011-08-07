@@ -12,6 +12,8 @@
 (set-variable 'confirm-kill-emacs 'yes-or-no-p)
 ;; try to improve slow performance on windows.
 (setq w32-get-true-file-attributes nil)
+;; remove trailing whitespaces
+(add-hook 'before-save-hook 'whitespace-cleanup)
 ;; write as dos
 (setq-default buffer-file-coding-system 'raw-text-dos)
 ;; provide
