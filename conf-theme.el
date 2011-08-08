@@ -29,7 +29,7 @@
 	(overwrite-mode
 	 (set-cursor-color djcb-overwrite-color)
 	 (setq cursor-type djcb-overwrite-cursor-type))
-	(t 
+	(t
 	 (set-cursor-color djcb-normal-color)
 	 (setq cursor-type djcb-normal-cursor-type))))
      (add-hook 'post-command-hook 'set-cursor-according-to-mode)
@@ -38,15 +38,6 @@
 	   '("emacs%@" (:eval (system-name)) ": " (:eval (if (buffer-file-name)
 							     (abbreviate-file-name (buffer-file-name))
 							   "%b")) " [%*]"))
-     ;; set default window size
-     (if window-system
-	 (progn
-	   (if (> (x-display-pixel-width) 1280)
-	       (add-to-list 'default-frame-alist (cons 'width 120))
-	     (add-to-list 'default-frame-alist (cons 'width 80)))
-	   (add-to-list 'default-frame-alist 
-			(cons 'height (/ (- (x-display-pixel-height) 320)
-					 (frame-char-height))))))
      ;; disable splash
      (setq inhibit-splash-screen t)
      ;; turn off toolbar
@@ -54,7 +45,7 @@
      ;; font lock mode
      (global-font-lock-mode 1)
      ;; mouse avoid
-     (mouse-avoidance-mode 'cat-and-mouse);; color theme
+     (mouse-avoidance-mode 'cat-and-mouse)
      ))
 ;; provide
 (provide 'conf-theme)
