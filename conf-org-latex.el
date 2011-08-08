@@ -60,7 +60,7 @@
 		     "\\end{frame}")))
 (add-to-list 'org-export-latex-classes
 		  '("article"
-		    "\\documentclass[11pt,a4paper,twoside,twocolumn]{article}\n
+		    "\\documentclass[11pt,a4paper,twoside]{article}\n
 \\usepackage[a4paper]{geometry}\n
 \\geometry{top=1.0cm, bottom=1.0cm, left=1.0cm, right=1.0cm}\n
 \\setlength{\\columnseprule}{1pt}\n
