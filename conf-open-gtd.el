@@ -1,6 +1,6 @@
-(require 'conf-org-files)
+(require 'conf-org)
 ;; delay loading till org-conf is loaded
-(eval-after-load "conf-org-files"
+(eval-after-load "conf-org"
   '(progn
      ;; open GTD index as default
      (defun gtd ()

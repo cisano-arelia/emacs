@@ -1,10 +1,5 @@
 ;; load modules
 (require 'conf-theme)
-(require 'conf-org-layout)
-(require 'conf-org-agenda)
-(require 'conf-org-capture)
-(require 'conf-org-latex)
-(require 'conf-org-babel)
 (require 'conf-open-gtd)
 (require 'conf-rainbow-delimiters)
 (require 'conf-redoplus)

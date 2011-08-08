@@ -4,8 +4,6 @@
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 ;; fix files
 (require 'conf-org-files)
-;; load org-mode
-(require 'org-install)
 ;; delay loading till org-install is loaded
 (eval-after-load "org"
   '(progn
@@ -41,6 +39,11 @@
      (setq org-refile-targets '((gtd-file-nextactions :maxlevel . 2)
 				(gtd-file-projects :level . 2)
 				(gtd-file-someday :level . 3)))
+     (require 'conf-org-layout)
+     (require 'conf-org-agenda)
+     (require 'conf-org-capture)
+     (require 'conf-org-latex)
+     (require 'conf-org-babel)
      ))
 ;; provide
 (provide 'conf-org)

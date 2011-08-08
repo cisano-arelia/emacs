@@ -1,22 +1,35 @@
 ;; require main org config
-(require 'conf-org)
-;; delay loading till org-conf is loaded
-(eval-after-load "conf-org"
-  '(progn
-     ;; allow bind
-     (setq org-export-allow-BIND t)
-     ;; use xetex
-     (setq org-latex-to-pdf-process 
-	   '("xelatex -interaction nonstopmode %f"
-	     "xelatex -interaction nonstopmode %f")) ;; for multiple passes
-     ;; open LCO as latex
-     (add-to-list 'auto-mode-alist '("\\.lco$" . latex-mode))
-     ;; set beamer/article latex export
-     (unless (boundp 'org-export-latex-classes)
-       (setq org-export-latex-classes nil))
-     (add-to-list 'org-export-latex-classes
-		  '("beamer"
-		    "\\documentclass[11pt]{beamer}\n
+(require 'org-install)
+(require 'org-latex)
+(setq org-export-latex-listings t)
+;; allow bind
+(setq org-export-allow-BIND t)
+;; use xetex
+(setq org-latex-to-pdf-process (list "latexmk -pdflatex=xelatex -pdf -quiet %f"))
+;; Specify default packages to be included in every tex file, whether pdflatex or xelatex
+(setq org-export-latex-packages-alist
+      '(("" "graphicx" t)
+	    ("" "longtable" nil)
+	    ("" "float" nil)))
+;; Packages to include when xelatex is used
+(setq org-export-latex-default-packages-alist
+		'(("" "fontspec" t)
+		  ("" "xunicode" t)
+		  ("" "url" t)
+		  ("" "rotating" t)
+		  ("dutch" "babel" t)
+		  ("babel" "csquotes" t)
+		  ("" "soul" t)
+		  ("xetex" "hyperref" nil)
+		  ))
+;; open LCO as latex
+(add-to-list 'auto-mode-alist '("\\.lco$" . latex-mode))
+;; set beamer/article latex export
+(unless (boundp 'org-export-latex-classes)
+  (setq org-export-latex-classes nil))
+(add-to-list 'org-export-latex-classes
+	     '("beamer"
+	       "\\documentclass[11pt]{beamer}\n
       \\mode<{{{beamermode}}}>\n
       \\usetheme{{{{beamertheme}}}}\n
       \\usecolortheme{{{{beamercolortheme}}}}\n
@@ -36,16 +49,16 @@
   commentstyle=\\color{red},
   }\n
       \\usepackage{verbatim}\n
-      \\institute{{{{beamerinstitute}}}}\n          
+      \\institute{{{{beamerinstitute}}}}\n
        \\subject{{{{beamersubject}}}}\n"
-		    
+
 		    ("\\section{%s}" . "\\section*{%s}")
-		    
+
 		    ("\\begin{frame}[fragile]\\frametitle{%s}"
 		     "\\end{frame}"
 		     "\\begin{frame}[fragile]\\frametitle{%s}"
 		     "\\end{frame}")))
-     (add-to-list 'org-export-latex-classes
+(add-to-list 'org-export-latex-classes
 		  '("article"
 		    "\\documentclass[11pt,a4paper,twoside,twocolumn]{article}\n
 \\usepackage[a4paper]{geometry}\n
@@ -61,11 +74,10 @@
 		    ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
 		    ("\\paragraph{%s}" . "\\paragraph*{%s}")
 		    ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-     ;; load path
-     (add-to-list 'load-path "~/emacs/contrib/scrlttr2")
-     ;; scrlttr2 support
-     (require 'org-isodoc)
-     (require 'org-scrlttr2)
-     ))
+;; load path
+(add-to-list 'load-path "~/emacs/contrib/scrlttr2")
+;; scrlttr2 support
+(require 'org-isodoc)
+(require 'org-scrlttr2)
 ;; provide
 (provide 'conf-org-latex)

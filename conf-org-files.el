@@ -1,5 +1,3 @@
-;; need org
-(require 'org-install)
 ;; set files
 (setq org-directory "~/Dropbox/Organizer/")
 (defvar gtd-file-index (concat org-directory "index/organizer.org"))

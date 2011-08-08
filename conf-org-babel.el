@@ -1,12 +1,8 @@
 ;; require main org config
-(require 'conf-org)
+(require 'org-install)
 ;; load path
 (add-to-list 'load-path "~/emacs/contrib/ruby/")
-;; delay loading till org-conf is loaded
-(eval-after-load "conf-org"
-  '(progn
-     ;; load org-babel-ruby
-     (require 'ob-ruby)
-     ))
+;; load org-babel-ruby
+(require 'ob-ruby)
 ;; provide
 (provide 'conf-org-babel)
