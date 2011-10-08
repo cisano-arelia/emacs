@@ -1,10 +1,10 @@
 ;; load path
 (add-to-list 'load-path "~/emacs/contrib/color-theme")
-(add-to-list 'load-path "~/emacs/contrib/themes")
+(add-to-list 'load-path "~/emacs/contrib/color-theme/themes")
 ;; load color-theme
 (require 'color-theme)
-(eval-after-load "color-theme"
-    '(progn
+;;(eval-after-load "color-theme"
+;;    '(progn
      (color-theme-initialize)
      (require 'color-theme-zenburn)
      (color-theme-zenburn)
@@ -46,6 +46,6 @@
      (global-font-lock-mode 1)
      ;; mouse avoid
      (mouse-avoidance-mode 'cat-and-mouse)
-     ))
+;;     ))
 ;; provide
 (provide 'conf-theme)
