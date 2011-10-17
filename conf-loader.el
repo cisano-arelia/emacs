@@ -8,5 +8,6 @@
 (require 'conf-locale)
 (require 'conf-printer)
 (require 'conf-gpg)
+(require 'conf-deft)
 ;; provide
 (provide 'conf-loader)
