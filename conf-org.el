@@ -39,6 +39,7 @@
      (setq org-refile-targets '((gtd-file-nextactions :maxlevel . 2)
 				(gtd-file-projects :level . 2)
 				(gtd-file-someday :level . 3)))
+     (require 'conf-org-mobile)
      (require 'conf-org-layout)
      (require 'conf-org-agenda)
      (require 'conf-org-capture)
