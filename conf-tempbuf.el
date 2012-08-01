@@ -9,7 +9,7 @@
        (add-hook 'w3-mode-hook 'turn-on-tempbuf-mode)
        (add-hook 'Man-mode-hook 'turn-on-tempbuf-mode)
        (add-hook 'view-mode-hook 'turn-on-tempbuf-mode)
-       (add-hook 'find-file-hooks 'turn-on-tempbuf-mode)
+;;     (add-hook 'find-file-hooks 'turn-on-tempbuf-mode)
      ))
 ;; provide
 (provide 'conf-tempbuf)
