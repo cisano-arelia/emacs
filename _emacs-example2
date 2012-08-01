@@ -1,0 +1,23 @@
+;; Example _emacs
+;;
+;; In Linux this should be called .emacs
+;;
+;; Org Mobile encryption password
+(defvar gtd-org-mobile-encryption-password "aoeu")
+;;
+;; Overload nathema specific settings
+(defvar conf-base-path "~/emacs/")
+(defvar gtd-base-path "~/Dropbox/Organizer/")
+(defvar gtd-file-index (concat gtd-base-path "index/organizer.org"))
+(defvar gtd-file-index-buffer "organizer.org")
+(defvar gtd-file-nextactions (concat gtd-base-path "taken.org.gpg"))
+(defvar gtd-file-calendar (concat gtd-base-path "agenda.org.gpg"))
+(defvar gtd-file-projects (concat gtd-base-path "projecten.org.gpg"))
+(defvar gtd-file-someday (concat gtd-base-path "ooit.org.gpg"))
+(defvar gtd-file-anniversaries (concat gtd-base-path "adresboek.org.gpg"))
+(defvar gtd-file-journal (concat gtd-base-path "logboek.org.gpg"))
+;;
+;; load path
+(add-to-list 'load-path conf-base-path)
+;; load
+(require 'conf-loader)

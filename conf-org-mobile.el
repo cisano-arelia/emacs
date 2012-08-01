@@ -8,6 +8,6 @@
 ;; Enable encryption
 (setq org-mobile-use-encryption t)
 ;; Set a password
-(setq org-mobile-encryption-password "bla")
+(setq org-mobile-encryption-password gtd-org-mobile-encryption-password)
 ;; provide
 (provide 'conf-org-mobile)

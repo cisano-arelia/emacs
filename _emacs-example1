@@ -1,0 +1,10 @@
+;; Example _emacs
+;;
+;; In Linux this should be called .emacs
+;;
+;; Org Mobile encryption password
+(defvar gtd-org-mobile-encryption-password "aoeu")
+;; load path
+(add-to-list 'load-path "~/emacs")
+;; load
+(require 'conf-loader)
