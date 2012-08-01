@@ -1,3 +1,15 @@
 Emacs configuratie
 Author: Peter de Jong <p.de.jong@gmail.com>
 Published under GPL
+
+Tips & Tricks
+====================================================================
+Open a file with Emacs under Windows in right-click menu:
+
+1. Add the registry key as described above, i.e.
+
+  [HKEY_CLASSES_ROOT\*\shell\Emacs\command]
+
+2. Set the value of command to the following, adjusting the path as necessary:
+
+  C:\emacs-22\emacs\bin\emacsclientw.exe -n "%1"
