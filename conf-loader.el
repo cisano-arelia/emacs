@@ -3,6 +3,7 @@
 (require 'conf-open-gtd)
 (require 'conf-rainbow-delimiters)
 (require 'conf-redoplus)
+(require 'conf-tempbuf)
 (require 'conf-daemon)
 (require 'conf-common)
 (require 'conf-locale)

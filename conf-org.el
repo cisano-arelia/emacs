@@ -24,7 +24,7 @@
      (setq org-tag-alist '((:startgroup . nil)
 			   ("WERK" . ?w) ("THUIS" . ?t) ("WINKEL" . ?i)
 			   (:endgroup . nil)
-			   ("AGRI" . ?a) ("RIVM" . ?r) ))
+			   ("AGRI" . ?a) ("RIVM" . ?r) ("LOGIUS" . ?l) ("ELenI" . ?e) ))
      ;; actie statussen
      (setq org-todo-keywords
 	   '((sequence "TAAK(t)" "|" "UITGEVOERD(u)")
