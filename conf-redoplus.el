@@ -1,5 +1,5 @@
 ;; load path
-(add-to-list 'load-path "~/emacs/contrib/redoplus")
+(add-to-list 'load-path (concat conf-base-path "contrib/redoplus"))
 ;; undo/redo
 (require 'redoplus)
 (eval-after-load "redoplus"

@@ -1,5 +1,5 @@
 ;; load path
-(add-to-list 'load-path "~/emacs/contrib/org/lisp")
+(add-to-list 'load-path (concat conf-base-path "contrib/org/lisp"))
 ;; org extension
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 ;; fix files

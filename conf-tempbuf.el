@@ -1,5 +1,5 @@
 ;; load path
-(add-to-list 'load-path "~/emacs/contrib/tempbuf")
+(add-to-list 'load-path (concat conf-base-path "contrib/tempbuf"))
 ;; undo/redo
 (require 'tempbuf)
 (eval-after-load "tempbuf"

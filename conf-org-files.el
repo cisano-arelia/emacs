@@ -1,5 +1,6 @@
 ;; set files
-(setq org-directory "~/Dropbox/Organizer/")
+(defvar gtd-base-path "~/Dropbox/Organizer/")
+(setq org-directory gtd-base-path)
 (defvar gtd-file-index (concat org-directory "index/organizer.org"))
 (defvar gtd-file-index-buffer "organizer.org")
 (defvar gtd-file-nextactions (concat org-directory "taken.org.gpg"))

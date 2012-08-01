@@ -1,3 +1,5 @@
+;; basepath
+(defvar conf-base-path "~/emacs/")
 ;; load modules
 (require 'conf-theme)
 (require 'conf-open-gtd)

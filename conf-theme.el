@@ -1,6 +1,6 @@
 ;; load path
-(add-to-list 'load-path "~/emacs/contrib/color-theme")
-(add-to-list 'load-path "~/emacs/contrib/color-theme/themes")
+(add-to-list 'load-path (concat conf-base-path "contrib/color-theme"))
+(add-to-list 'load-path (concat conf-base-path "contrib/color-theme/themes"))
 ;; load color-theme
 (require 'color-theme)
 ;;(eval-after-load "color-theme"

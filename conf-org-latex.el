@@ -75,7 +75,7 @@
                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
                     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 ;; load path
-(add-to-list 'load-path "~/emacs/contrib/scrlttr2")
+(add-to-list 'load-path (concat conf-base-path "contrib/scrlttr2"))
 ;; scrlttr2 support
 (require 'org-isodoc)
 (require 'org-scrlttr2)
