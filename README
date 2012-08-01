@@ -4,7 +4,7 @@ Published under GPL
 
 Tips & Tricks
 ====================================================================
-Open a file with Emacs under Windows in right-click menu:
+Open a file with Emacs under Windows in context menu:
 
 1. Add the registry key as described above, i.e.
 
