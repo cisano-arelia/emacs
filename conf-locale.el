@@ -5,6 +5,9 @@
 (set-keyboard-coding-system 'utf-8)
 (setq default-buffer-file-coding-system 'utf-8)
 (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
-(set-clipboard-coding-system 'utf-16le-dos)
+;; in case of windows set clipboard coding system
+(if (eq system-type 'windows-nt)
+   (set-clipboard-coding-system 'utf-16le-dos)
+)
 ;; provide
 (provide 'conf-locale)
