@@ -16,6 +16,20 @@
 (defvar gtd-file-someday (concat gtd-base-path "ooit.org.gpg"))
 (defvar gtd-file-anniversaries (concat gtd-base-path "adresboek.org.gpg"))
 (defvar gtd-file-journal (concat gtd-base-path "logboek.org.gpg"))
+;; overload nathema specific task contexts and actions
+(defvar gtd-tag-alist '((:startgroup . nil)
+                        ("WERK" . ?w) ("THUIS" . ?t) ("WINKEL" . ?i)
+                        (:endgroup . nil)
+                        ("AGRI" . ?a) ("RIVM" . ?r) ("LOGIUS" . ?l) ("ELenI" . ?e) ))
+(defvar gtd-todo-keywords
+        '((sequence "TAAK(t)" "|" "UITGEVOERD(u)")
+          (sequence "WACHT(w)" "|")
+          (sequence "NIEUW(n)" "|")
+          (sequence "AFSPRAAK(f)" "|")
+          (sequence "BELLEN(b)" "|")
+          (sequence "PROJECT(p)" "|" "AFGEROND(r)")
+          (sequence "|" "GEANNULEERD(a)")
+          (sequence "|" "GEDELEGEERD(d)")))
 ;;
 ;; load path
 (add-to-list 'load-path conf-base-path)
