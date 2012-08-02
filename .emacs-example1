@@ -1,6 +1,4 @@
-;; Example _emacs
-;;
-;; In Linux this should be called .emacs
+;; Example .emacs
 ;;
 ;; Org Mobile encryption password
 (defvar gtd-org-mobile-encryption-password "aoeu")
