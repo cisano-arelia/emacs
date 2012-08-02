@@ -21,12 +21,13 @@
        (setq ad-return-value
 	     (replace-regexp-in-string "\\.org\\.gpg_archive" ".org.archive.gpg" ad-return-value)))
      ;; contexts
-     (setq org-tag-alist '((:startgroup . nil)
-			   ("WERK" . ?w) ("THUIS" . ?t) ("WINKEL" . ?i)
-			   (:endgroup . nil)
-			   ("AGRI" . ?a) ("RIVM" . ?r) ("LOGIUS" . ?l) ("ELenI" . ?e) ))
+     (defvar gtd-tag-alist '((:startgroup . nil)
+		  	     ("WERK" . ?w) ("THUIS" . ?t) ("WINKEL" . ?i)
+			     (:endgroup . nil)
+			     ("AGRI" . ?a) ("RIVM" . ?r) ("LOGIUS" . ?l) ("ELenI" . ?e) ))
+     (setq org-tag-alist gtd-tag-alist)
      ;; actie statussen
-     (setq org-todo-keywords
+     (defvar gtd-todo-keywords
 	   '((sequence "TAAK(t)" "|" "UITGEVOERD(u)")
 	     (sequence "WACHT(w)" "|")
 	     (sequence "NIEUW(n)" "|")
@@ -35,6 +36,7 @@
 	     (sequence "PROJECT(p)" "|" "AFGEROND(r)")
 	     (sequence "|" "GEANNULEERD(a)")
 	     (sequence "|" "GEDELEGEERD(d)")))
+     (setq org-todo-keywords gtd-todo-keywords)
      ;; Set refile targets
      (setq org-refile-targets '((gtd-file-nextactions :maxlevel . 2)
 				(gtd-file-projects :level . 2)
