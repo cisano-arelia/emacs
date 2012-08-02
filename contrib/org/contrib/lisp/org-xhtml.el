@@ -1,16 +1,14 @@
 ;;; org-xhtml.el --- XHTML export for Org-mode (uses org-lparse)
 
-;; Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
-;;   Free Software Foundation, Inc.
+;; Copyright (C) 2004-2012 Free Software Foundation, Inc.
 
 ;; Author: Carsten Dominik <carsten at orgmode dot org>
 ;; Keywords: outlines, hypermedia, calendar, wp
 ;; Homepage: http://orgmode.org
-;; Version: 0.8
-
+;;
 ;; This file is not (yet) part of GNU Emacs.
 ;; However, it is distributed under the same license.
-
+;;
 ;; GNU Emacs is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
 ;; the Free Software Foundation, either version 3 of the License, or
@@ -30,14 +28,15 @@
 ;;; Code:
 
 (require 'org-exp)
+(require 'org-html) 			; FIXME; remove during merge
 (require 'format-spec)
-
 (require 'org-lparse)
-
 (eval-when-compile (require 'cl) (require 'table) (require 'browse-url))
 
 (declare-function org-id-find-id-file "org-id" (id))
 (declare-function htmlize-region "ext:htmlize" (beg end))
+(declare-function org-pop-to-buffer-same-window
+		  "org-compat" (&optional buffer-or-name norecord label))
 
 (defgroup org-export-xhtml nil
   "Options specific for HTML export of Org-mode files."
@@ -166,6 +165,12 @@ not be modified."
   dt { font-weight: bold; }
   div.figure { padding: 0.5em; }
   div.figure p { text-align: center; }
+  div.inlinetask {
+    padding:10px;
+    border:2px solid gray;
+    margin:10px;
+    background: #ffffcc;
+  }
   textarea { overflow-x: auto; }
   .linenr { font-size:smaller }
   .code-highlighted {background-color:#ffff00;}
@@ -377,11 +382,13 @@ precedence over this variable."
 		 (string :tag "Custom formatting string")
 		 (function :tag "Function (must return a string)")))
 
-(defcustom org-export-xhtml-preamble-format
-  '(("en" "<h1 class=\"title\">%t</h1>"))
+(defcustom org-export-xhtml-preamble-format '(("en" ""))
   "The format for the HTML preamble.
 
 %t stands for the title.
+%a stands for the author's name.
+%e stands for the author's email.
+%d stands for the date.
 
 If you need to use a \"%\" character, you need to escape it
 like that: \"%%\"."
@@ -417,10 +424,10 @@ precedence over this variable."
 "))
   "The format for the HTML postamble.
 
-%a stands for the author.
-%e stands for the email(s).
+%a stands for the author's name.
+%e stands for the author's email.
 %d stands for the date.
-%c will be replaced by information about Org/Emacs.
+%c will be replaced by information about Org/Emacs versions.
 %v will be replaced by `org-export-xhtml-validation-link'.
 
 If you need to use a \"%\" character, you need to escape it
@@ -556,25 +563,22 @@ When nil, also column one will use data tags."
   :group 'org-export-xhtml
   :type 'string)
 
-(defcustom org-export-xhtml-with-timestamp nil
-  "If non-nil, write timestamp into the exported HTML text.
-If non-nil, write `org-export-xhtml-html-helper-timestamp' into the
-exported HTML text.  Otherwise, the buffer will just be saved to
-a file."
-  :group 'org-export-xhtml
-  :type 'boolean)
+;; FIXME Obsolete since Org 7.7
+;; Use the :timestamp option or `org-export-time-stamp-file' instead
+(defvar org-export-xhtml-with-timestamp nil
+  "If non-nil, write container for HTML-helper-mode timestamp.")
 
-(defcustom org-export-xhtml-html-helper-timestamp
-  "<br/><br/><hr/><p><!-- hhmts start --> <!-- hhmts end --></p>\n"
-  "The HTML tag used as timestamp delimiter for HTML-helper-mode."
-  :group 'org-export-xhtml
-  :type 'string)
+;; FIXME Obsolete since Org 7.7
+(defvar org-export-xhtml-html-helper-timestamp
+  "\n<p><br/><br/>\n<!-- hhmts start --> <!-- hhmts end --></p>\n"
+  "The HTML tag used as timestamp delimiter for HTML-helper-mode.")
 
 (defcustom org-export-xhtml-protect-char-alist
   '(("&" . "&amp;")
     ("<" . "&lt;")
     (">" . "&gt;"))
   "Alist of characters to be converted by `org-html-protect'."
+  :group 'org-export-xhtml
   :type '(repeat (cons (string :tag "Character")
 		       (string :tag "HTML equivalent"))))
 
@@ -621,6 +625,26 @@ with a link to this URL."
 	  (const :tag "Keep internal css" nil)
 	  (string :tag "URL or local href")))
 
+;; FIXME: The following variable is obsolete since Org 7.7 but is
+;; still declared and checked within code for compatibility reasons.
+;; Use the custom variables `org-export-xhtml-divs' instead.
+(defvar org-export-xhtml-content-div "content"
+  "The name of the container DIV that holds all the page contents.
+
+This variable is obsolete since Org version 7.7.
+Please set `org-export-xhtml-divs' instead.")
+
+(defcustom org-export-xhtml-divs '("preamble" "content" "postamble")
+  "The name of the main divs for HTML export.
+This is a list of three strings, the first one for the preamble
+DIV, the second one for the content DIV and the third one for the
+postamble DIV."
+  :group 'org-export-xhtml
+  :type '(list
+	  (string :tag " Div for the preamble:")
+	  (string :tag "  Div for the content:")
+	  (string :tag "Div for the postamble:")))
+
 ;;; Hooks
 
 (defvar org-export-xhtml-after-blockquotes-hook nil
@@ -629,24 +653,30 @@ with a link to this URL."
 (defvar org-export-xhtml-final-hook nil
   "Hook run at the end of HTML export, in the new buffer.")
 
-;;; HTML export
+(defun org-export-xhtml-preprocess-latex-fragments ()
+  (when (equal org-lparse-backend 'xhtml)
+    (org-export-xhtml-do-preprocess-latex-fragments)))
 
-(defun org-export-xhtml-preprocess (parameters)
+(defvar org-lparse-opt-plist)		    ; bound during org-do-lparse
+(defun org-export-xhtml-do-preprocess-latex-fragments ()
   "Convert LaTeX fragments to images."
-  (when (and org-current-export-file
-	     (plist-get parameters :LaTeX-fragments))
-    (org-format-latex
-     (concat "ltxpng/" (file-name-sans-extension
-			(file-name-nondirectory
-			 org-current-export-file)))
-     org-current-export-dir nil "Creating LaTeX image %s"
-     nil nil
-     (cond
-      ((eq (plist-get parameters :LaTeX-fragments) 'verbatim) 'verbatim)
-      ((eq (plist-get parameters :LaTeX-fragments) 'mathjax ) 'mathjax)
-      ((eq (plist-get parameters :LaTeX-fragments) t        ) 'mathjax)
-      ((eq (plist-get parameters :LaTeX-fragments) 'dvipng  ) 'dvipng)
-      (t nil))))
+  (let* ((latex-frag-opt (plist-get org-lparse-opt-plist :LaTeX-fragments))
+	 (latex-frag-opt-1		; massage the options
+	  (cond
+	   ((eq latex-frag-opt 'verbatim) 'verbatim)
+	   ((eq latex-frag-opt 'mathjax ) 'mathjax)
+	   ((eq latex-frag-opt t        ) 'mathjax)
+	   ((eq latex-frag-opt 'dvipng  ) 'dvipng)
+	   (t nil))))
+    (when (and org-current-export-file latex-frag-opt)
+      (org-format-latex
+       (concat "ltxpng/" (file-name-sans-extension
+			  (file-name-nondirectory
+			   org-current-export-file)))
+       org-current-export-dir nil "Creating LaTeX image %s"
+       nil nil latex-frag-opt-1))))
+
+(defun org-export-xhtml-preprocess-label-references ()
   (goto-char (point-min))
   (let (label l1)
     (while (re-search-forward "\\\\ref{\\([^{}\n]+\\)}" nil t)
@@ -657,6 +687,19 @@ with a link to this URL."
 	      (setq l1 (substring label (match-beginning 1)))
 	    (setq l1 label)))
 	(replace-match (format "[[#%s][%s]]" label l1) t t)))))
+
+(defun org-export-xhtml-preprocess (parameters)
+  (org-export-xhtml-preprocess-label-references))
+
+;; Process latex fragments as part of
+;; `org-export-preprocess-after-blockquote-hook'. Note that this hook
+;; is the one that is closest and well before the call to
+;; `org-export-attach-captions-and-attributes' in
+;; `org-export-preprocess-stirng'.  The above arrangement permits
+;; captions, labels and attributes to be attached to png images
+;; generated out of latex equations.
+(add-hook 'org-export-preprocess-after-blockquote-hook
+	  'org-export-xhtml-preprocess-latex-fragments)
 
 (defvar html-table-tag nil) ; dynamically scoped into this.
 
@@ -690,23 +733,24 @@ See variable `org-export-xhtml-link-org-files-as-html'"
 		  "."
 		  (plist-get opt-plist :html-extension)))))))
 
-;;; org-xhtml-format-org-link
 (defun org-xhtml-format-org-link (opt-plist type-1 path fragment desc attr
-					   descp)
+					    descp)
   "Make an HTML link.
 OPT-PLIST is an options list.
-TYPE is the device-type of the link (THIS://foo.html)
-PATH is the path of the link (http://THIS#locationx)
-FRAGMENT is the fragment part of the link, if any (foo.html#THIS)
+TYPE is the device-type of the link (THIS://foo.html).
+PATH is the path of the link (http://THIS#location).
+FRAGMENT is the fragment part of the link, if any (foo.html#THIS).
 DESC is the link description, if any.
-ATTR is a string of other attributes of the a element.
-MAY-INLINE-P allows inlining it as an image."
+ATTR is a string of other attributes of the \"a\" element."
   (declare (special org-lparse-par-open))
-  (when (string= type-1 "coderef")
-    (setq attr
-	  (format "class=\"coderef\" onmouseover=\"CodeHighlightOn(this, '%s');\" onmouseout=\"CodeHighlightOff(this, '%s');\""
-		  fragment fragment)))
   (save-match-data
+    (when (string= type-1 "coderef")
+      (let ((ref fragment))
+	(setq desc (format (org-export-get-coderef-format ref (and descp desc))
+			   (cdr (assoc ref org-export-code-refs)))
+	      fragment (concat  "coderef-" ref)
+	      attr (format "class=\"coderef\" onmouseover=\"CodeHighlightOn(this, '%s');\" onmouseout=\"CodeHighlightOff(this, '%s');\""
+			   fragment fragment))))
     (let* ((may-inline-p
 	    (and (member type-1 '("http" "https" "file"))
 		 (org-lparse-should-inline-p path descp)
@@ -772,8 +816,8 @@ MAY-INLINE-P allows inlining it as an image."
 
 (defun org-xhtml-format-inline-image (desc)
   ;; FIXME: alt text missing here?
-  (org-xhtml-format-tags "<img src=\"%s\" alt=\"\"/>" "" desc))
-
+  (org-xhtml-format-tags
+   "<img src=\"%s\" alt=\"%s\"/>" "" desc (file-name-nondirectory desc)))
 
 ;; FIXME: the org-lparse defvar belongs to org-lparse.el
 (defvar org-lparse-link-description-is-image)
@@ -781,34 +825,34 @@ MAY-INLINE-P allows inlining it as an image."
 (defun org-xhtml-format-image (src)
   "Create image tag with source and attributes."
   (save-match-data
-    (if (string-match "^ltxpng/" src)
-	(format "<img src=\"%s\" alt=\"%s\"/>"
-                src (org-find-text-property-in-string 'org-latex-src src))
-      (let* ((caption (org-find-text-property-in-string 'org-caption src))
-	     (attr (org-find-text-property-in-string 'org-attributes src))
-	     (label (org-find-text-property-in-string 'org-label src))
-	     (caption (and caption (org-xml-encode-org-text caption)))
-	     (img (format "<img src=\"%s\"%s />"
-			  src
-			  (if (string-match "\\<alt=" (or attr ""))
-			      (concat " " attr )
-			    (concat " " attr " alt=\"" src "\""))))
-	     (extra (concat
-		     (and label
-			  (format "id=\"%s\" " (org-solidify-link-text label)))
-		     "class=\"figure\"")))
-	(if caption
-	    (with-temp-buffer
-	      (with-org-lparse-preserve-paragraph-state
-	       (insert
-		(org-lparse-format
-		 '("<div %s>" . "\n</div>")
-		 (concat
-		  (org-lparse-format '("\n<p>" . "</p>") img)
-		  (org-lparse-format '("\n<p>" . "</p>") caption))
-		 extra)))
-	      (buffer-string))
-	  img)))))
+    (let* ((caption (org-find-text-property-in-string 'org-caption src))
+	   (attr (org-find-text-property-in-string 'org-attributes src))
+	   (label (org-find-text-property-in-string 'org-label src))
+	   (caption (and caption (org-xml-encode-org-text caption)))
+	   (img-extras (if (string-match "^ltxpng/" src)
+			   (format " alt=\"%s\""
+				   (org-find-text-property-in-string
+				    'org-latex-src src))
+			 (if (string-match "\\<alt=" (or attr ""))
+			     (concat " " attr )
+			   (concat " " attr " alt=\"" src "\""))))
+	   (img (format "<img src=\"%s\"%s />" src img-extras))
+	   (extra (concat
+		   (and label
+			(format "id=\"%s\" " (org-solidify-link-text label)))
+		   "class=\"figure\"")))
+      (if caption
+	  (with-temp-buffer
+	    (with-org-lparse-preserve-paragraph-state
+	     (insert
+	      (org-lparse-format
+	       '("<div %s>" . "\n</div>")
+	       (concat
+		(org-lparse-format '("\n<p>" . "</p>") img)
+		(org-lparse-format '("\n<p>" . "</p>") caption))
+	       extra)))
+	    (buffer-string))
+	img))))
 
 (defun org-export-xhtml-get-bibliography ()
   "Find bibliography, cut it out and return it."
@@ -960,7 +1004,6 @@ that uses these same face definitions."
 
 ;; FIXME: the org-lparse defvar belongs to org-lparse.el
 (defvar org-lparse-toc)
-(defvar org-lparse-footnote-buffer)
 (defvar org-lparse-footnote-definitions)
 (defvar org-lparse-dyn-first-heading-pos)
 
@@ -992,10 +1035,6 @@ that uses these same face definitions."
   ;; Remove display properties
   (remove-text-properties (point-min) (point-max) '(display t))
 
-  ;; kill temporary buffers
-  (when org-lparse-footnote-buffer
-    (kill-buffer org-lparse-footnote-buffer))
-
   ;; Run the hook
   (run-hooks 'org-export-xhtml-final-hook))
 
@@ -1016,32 +1055,32 @@ that uses these same face definitions."
   (when (> level org-last-level)
     (let ((cnt (- level org-last-level)))
       (while (>= (setq cnt (1- cnt)) 0)
-	(org-lparse-begin 'LIST 'unordered)
-	(org-lparse-begin 'LIST-ITEM 'unordered))))
+	(org-lparse-begin-list 'unordered)
+	(org-lparse-begin-list-item 'unordered))))
   (when (< level org-last-level)
     (let ((cnt (- org-last-level level)))
       (while (>= (setq cnt (1- cnt)) 0)
-	(org-lparse-end-list-item)
-	(org-lparse-end 'LIST 'unordered))))
+	(org-lparse-end-list-item-1)
+	(org-lparse-end-list 'unordered))))
 
-  (org-lparse-end-list-item)
-  (org-lparse-begin 'LIST-ITEM 'unordered)
+  (org-lparse-end-list-item-1)
+  (org-lparse-begin-list-item 'unordered)
   (insert toc-entry))
 
-(defun org-xhtml-begin-toc (lang-specific-heading)
+(defun org-xhtml-begin-toc (lang-specific-heading max-level)
   (org-lparse-insert-tag "<div id=\"table-of-contents\">")
   (insert
    (org-lparse-format 'HEADING lang-specific-heading
 		     (or (org-lparse-get 'TOPLEVEL-HLEVEL) 1)))
   (org-lparse-insert-tag "<div id=\"text-table-of-contents\">")
-  (org-lparse-begin 'LIST 'unordered)
-  (org-lparse-begin 'LIST-ITEM 'unordered))
+  (org-lparse-begin-list 'unordered)
+  (org-lparse-begin-list-item 'unordered))
 
 (defun org-xhtml-end-toc ()
   (while (> org-last-level (1- org-min-level))
     (setq org-last-level (1- org-last-level))
-    (org-lparse-end-list-item)
-    (org-lparse-end 'LIST 'unordered))
+    (org-lparse-end-list-item-1)
+    (org-lparse-end-list 'unordered))
   (org-lparse-insert-tag "</div>")
   (org-lparse-insert-tag "</div>")
 
@@ -1197,6 +1236,12 @@ make any modifications to the exporter file.  For example,
 ;; register the xhtml exporter with org-lparse library
 (org-lparse-register-backend 'xhtml)
 
+(defun org-xhtml-unload-function ()
+  (org-lparse-unregister-backend 'xhtml)
+  (remove-hook 'org-export-preprocess-after-blockquote-hook
+	       'org-export-xhtml-preprocess-latex-fragments)
+  nil)
+
 (defun org-xhtml-begin-document-body (opt-plist)
   (let ((link-up (and (plist-get opt-plist :link-up)
 		      (string-match "\\S-" (plist-get opt-plist :link-up))
@@ -1205,19 +1250,24 @@ make any modifications to the exporter file.  For example,
 			(string-match "\\S-" (plist-get opt-plist :link-home))
 			(plist-get opt-plist :link-home))))
     (insert "\n<body>")
-    (org-lparse-insert-tag "<div id=\"content\">")
     (insert  "\n"
 	     (or (and (or link-up link-home)
 		      (format org-export-xhtml-home/up-format
 			      (or link-up link-home)
 			      (or link-home link-up))) "")
 	     "\n"))
-  (org-xhtml-insert-preamble opt-plist))
+  (org-xhtml-insert-preamble opt-plist)
+
+  (org-lparse-insert-tag
+   "<div id=\"%s\">" (or org-export-xhtml-content-div
+			 (nth 1 org-export-xhtml-divs)))
+
+  (org-lparse-insert-tag "\n<h1 class=\"title\"> %s </h1>\n"
+			 (plist-get opt-plist :title)))
 
 (defun org-xhtml-end-document-body (opt-plist)
   (org-xhtml-insert-postamble opt-plist)
   (unless body-only
-    (org-lparse-insert-tag "</div>")
     (insert "\n</body>")))
 
 (defun org-xhtml-begin-document-content (opt-plist)
@@ -1247,11 +1297,11 @@ make any modifications to the exporter file.  For example,
 	     "%s
 <!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"
 	       \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">
-<html xmlns=\"http://www.w3.org/1999/xhtml\"
-lang=\"%s\" xml:lang=\"%s\">
+<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"%s\" xml:lang=\"%s\">
 <head>
 <title>%s</title>
 <meta http-equiv=\"Content-Type\" content=\"text/html;charset=%s\"/>
+<meta name=\"title\" content=\"%s\"/>
 <meta name=\"generator\" content=\"Org-mode\"/>
 <meta name=\"generated\" content=\"%s\"/>
 <meta name=\"author\" content=\"%s\"/>
@@ -1273,6 +1323,7 @@ lang=\"%s\" xml:lang=\"%s\">
 	     language language
 	     (plist-get opt-plist :title)
 	     charset
+	     (plist-get opt-plist :title)
 	     (plist-get opt-plist :effective-date)
 	     (plist-get opt-plist :author)
 	     (plist-get opt-plist :description)
@@ -1376,18 +1427,18 @@ lang=\"%s\" xml:lang=\"%s\">
        (END (org-lparse-begin-paragraph))))
     (t (error "Unknown environment %s" style))))
 
-(defun org-xhtml-begin-environment (style)
+(defun org-xhtml-begin-environment (style env-options-plist)
   (org-xhtml-format-environment style 'BEGIN))
 
-(defun org-xhtml-end-environment (style)
+(defun org-xhtml-end-environment (style env-options-plist)
   (org-xhtml-format-environment style 'END))
 
-(defun org-xhtml-begin-list (ltype &optional arg1)
+(defun org-xhtml-begin-list (ltype)
   (setq ltype (or (org-lparse-html-list-type-to-canonical-list-type ltype)
 		  ltype))
-
   (case ltype
-    (ordered (let ((extra (if arg1 (format " start=\"%d\"" arg1) "")))
+    (ordered (let* ((arg1 nil)
+		    (extra (if arg1 (format " start=\"%d\"" arg1) "")))
 	       (org-lparse-insert-tag "<ol%s>" extra)))
     (unordered (org-lparse-insert-tag "<ul>"))
     (description (org-lparse-insert-tag "<dl>"))
@@ -1500,7 +1551,8 @@ lang=\"%s\" xml:lang=\"%s\">
 	     "")
 
 	   (let* ((align (aref org-lparse-table-colalign-vector c))
-		  (alignspec (if org-xhtml-format-table-no-css
+		  (alignspec (if (and (boundp 'org-xhtml-format-table-no-css)
+				      org-xhtml-format-table-no-css)
 				 " align=\"%s\"" " class=\"%s\""))
 		  (extra (format alignspec  align)))
 	     (format "<col%s />" extra))
@@ -1517,8 +1569,9 @@ lang=\"%s\" xml:lang=\"%s\">
       (let ((c (string-to-number (match-string 1))))
 	(replace-match
 	 (if org-export-xhtml-table-align-individual-fields
-	     (format (if org-xhtml-format-table-no-css " align=\"%s\""
-		       " class=\"%s\"")
+	     (format (if (and (boundp 'org-xhtml-format-table-no-css)
+			      org-xhtml-format-table-no-css)
+			 " align=\"%s\"" " class=\"%s\"")
 		     (or (aref org-lparse-table-colalign-vector c) "left")) "")
 	 t t)))
     (goto-char (point-max)))
@@ -1529,7 +1582,7 @@ lang=\"%s\" xml:lang=\"%s\">
    (cons (eval (car org-export-table-row-tags))
 	 (eval (cdr org-export-table-row-tags))) row))
 
-(defun org-xhtml-format-table-cell (text r c)
+(defun org-xhtml-format-table-cell (text r c horiz-span)
   (let ((cell-style-cookie (or (and org-lparse-table-is-styled
 				    (format "@@class%03d@@" c)) "")))
     (cond
@@ -1654,10 +1707,17 @@ lang=\"%s\" xml:lang=\"%s\">
     (INIT-METHOD nil)
     (SAVE-METHOD nil)
     (CLEANUP-METHOD nil)
-    (OTHER-BACKENDS
-     '("xhtml" "etext" "html" "html10" "mediawiki" "pdf" "sdw" "sdw3" "sdw4"
-       "text" "text10" "odt" "vor" "vor4"))
-    (CONVERT-METHOD org-lparse-convert-process)
+    ;; (OTHER-BACKENDS
+    ;;  ;; There is a provision to register a per-backend converter and
+    ;;  ;; output formats. Refer `org-lparse-get-converter' and
+    ;;  ;; `org-lparse-get-other-backends'.
+
+    ;;  ;; The default behaviour is to use `org-lparse-convert-process'
+    ;;  ;; and `org-lparse-convert-capabilities'.
+    ;;  )
+    ;; (CONVERT-METHOD
+    ;;  ;; See note above
+    ;;  )
     (EXPORT-DIR (org-export-directory :html opt-plist))
     (FILE-NAME-EXTENSION (plist-get opt-plist :html-extension))
     (EXPORT-BUFFER-NAME "*Org HTML Export*")
@@ -1709,21 +1769,31 @@ lang=\"%s\" xml:lang=\"%s\">
 	  (date (plist-get opt-plist :effective-date))
 	  (author (plist-get opt-plist :author))
 	  (lang-words (plist-get opt-plist :lang-words))
-	  (email (plist-get opt-plist :email)))
+	  (email (plist-get opt-plist :email))
+	  html-pre-real-contents)
       (cond ((stringp html-pre)
-	     (insert
-	      (format-spec html-pre `((?t . ,title) (?a . ,author)
-				      (?d . ,date) (?e . ,email)))))
+	     (setq html-pre-real-contents
+		   (format-spec html-pre `((?t . ,title) (?a . ,author)
+					   (?d . ,date) (?e . ,email)))))
 	    ((functionp html-pre)
-	     (funcall html-pre opt-plist))
+	     (insert "<div id=\"" (nth 0 org-export-xhtml-divs) "\">\n")
+	     (funcall html-pre)
+	     (insert "\n</div>\n"))
 	    (t
-	     (insert
-	      (format-spec
-	       (or (cadr (assoc (nth 0 lang-words)
-				org-export-xhtml-preamble-format))
-		   (cadr (assoc "en" org-export-xhtml-preamble-format)))
-	       `((?t . ,title) (?a . ,author)
-		 (?d . ,date) (?e . ,email)))))))))
+	     (setq html-pre-real-contents
+		   (format-spec
+		    (or (cadr (assoc (nth 0 lang-words)
+				     org-export-xhtml-preamble-format))
+			(cadr (assoc "en" org-export-xhtml-preamble-format)))
+		    `((?t . ,title) (?a . ,author)
+		      (?d . ,date) (?e . ,email))))))
+
+      ;; don't output an empty preamble DIV
+      (unless (and (functionp html-pre)
+		   (equal html-pre-real-contents ""))
+	(insert "<div id=\"" (nth 0 org-export-xhtml-divs) "\">\n")
+	(insert html-pre-real-contents)
+	(insert "\n</div>\n")))))
 
 (defun org-xhtml-insert-postamble (opt-plist)
   (when org-lparse-footnote-definitions
@@ -1735,6 +1805,9 @@ lang=\"%s\" xml:lang=\"%s\">
   (let ((bib (org-export-xhtml-get-bibliography)))
     (when bib
       (insert "\n" bib "\n")))
+
+  (unless body-only
+    (org-lparse-insert-tag "</div>"))
 
   ;; export html postamble
   (unless body-only
@@ -1753,18 +1826,16 @@ lang=\"%s\" xml:lang=\"%s\">
 	    (concat "Org version " org-version " with Emacs version "
 		    (number-to-string emacs-major-version))))
       (when (plist-get opt-plist :html-postamble)
+	(insert "\n<div id=\"" (nth 2 org-export-xhtml-divs) "\">\n")
 	(cond ((stringp html-post)
-	       (insert "<div id=\"postamble\">\n")
 	       (insert (format-spec html-post
 				    `((?a . ,author) (?e . ,email)
 				      (?d . ,date)   (?c . ,creator-info)
-				      (?v . ,html-validation-link))))
-	       (insert "</div>"))
+				      (?v . ,html-validation-link)))))
 	      ((functionp html-post)
-	       (funcall html-post opt-plist))
+	       (funcall html-post))
 	      ((eq html-post 'auto)
 	       ;; fall back on default postamble
-	       (insert "<div id=\"postamble\">\n")
 	       (when (plist-get opt-plist :time-stamp-file)
 		 (insert "<p class=\"date\">" (nth 2 lang-words) ": " date "</p>\n"))
 	       (when (and (plist-get opt-plist :author-info) author)
@@ -1775,20 +1846,21 @@ lang=\"%s\" xml:lang=\"%s\">
 		 (insert "<p class=\"creator\">"
 			 (concat "Org version " org-version " with Emacs version "
 				 (number-to-string emacs-major-version) "</p>\n")))
-	       (insert html-validation-link "\n</div>"))
+	       (insert html-validation-link "\n"))
 	      (t
-	       (insert "<div id=\"postamble\">\n")
 	       (insert (format-spec
 			(or (cadr (assoc (nth 0 lang-words)
 					 org-export-xhtml-postamble-format))
 			    (cadr (assoc "en" org-export-xhtml-postamble-format)))
 			`((?a . ,author) (?e . ,email)
 			  (?d . ,date)   (?c . ,creator-info)
-			  (?v . ,html-validation-link))))
-	       (insert "</div>"))))))
+			  (?v . ,html-validation-link))))))
+	(insert "</div>"))))
 
-  (if org-export-xhtml-with-timestamp
-      (insert org-export-xhtml-html-helper-timestamp)))
+  ;; FIXME `org-export-xhtml-with-timestamp' has been declared
+  ;; obsolete since Org 7.7 -- don't forget to remove this.
+  (when org-export-xhtml-with-timestamp
+    (insert org-export-xhtml-html-helper-timestamp)))
 
 ;; There are references to org-html-expand, org-html-protect and
 ;; org-html-do-expand outside of org-html.el. For now provide a
@@ -1816,5 +1888,4 @@ lang=\"%s\" xml:lang=\"%s\">
 
 (provide 'org-xhtml)
 
-;; arch-tag: 8109d84d-eb8f-460b-b1a8-f45f3a6c7ea1
 ;;; org-xhtml.el ends here

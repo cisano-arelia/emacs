@@ -1,15 +1,13 @@
 ;;; org-protocol.el --- Intercept calls from emacsclient to trigger custom actions.
 ;;
-;; Copyright (C) 2008, 2009, 2010
-;;          Free Software Foundation, Inc.
+;; Copyright (C) 2008-2012  Free Software Foundation, Inc.
 ;;
-;; Author: Bastien Guerry <bzg AT altern DOT org>
-;; Author: Daniel M German <dmg AT uvic DOT org>
-;; Author: Sebastian Rose <sebastian_rose AT gmx DOT de>
-;; Author: Ross Patterson <me AT rpatterson DOT net>
+;; Authors: Bastien Guerry <bzg AT gnu DOT org>
+;;       Daniel M German <dmg AT uvic DOT org>
+;;       Sebastian Rose <sebastian_rose AT gmx DOT de>
+;;       Ross Patterson <me AT rpatterson DOT net>
 ;; Maintainer: Sebastian Rose <sebastian_rose AT gmx DOT de>
 ;; Keywords: org, emacsclient, wp
-;; Version: 7.7
 
 ;; This file is part of GNU Emacs.
 ;;
@@ -146,8 +144,8 @@
 (defgroup org-protocol nil
   "Intercept calls from emacsclient to trigger custom actions.
 
-This is done by advising `server-visit-files' to scann the list of filenames
-for `org-protocol-the-protocol' and sub-procols defined in
+This is done by advising `server-visit-files' to scan the list of filenames
+for `org-protocol-the-protocol' and sub-protocols defined in
 `org-protocol-protocol-alist' and `org-protocol-protocol-alist-default'."
   :version "22.1"
   :group 'convenience
@@ -227,7 +225,7 @@ Consider using the interactive functions `org-protocol-create' and
   :type 'alist)
 
 (defcustom org-protocol-protocol-alist nil
-  "* Register custom handlers for org-protocol.
+  "Register custom handlers for org-protocol.
 
 Each element of this list must be of the form:
 
@@ -547,8 +545,8 @@ as filename."
               (when (string-match proto fname)
                 (let* ((func (plist-get (cdr prolist) :function))
                        (greedy (plist-get (cdr prolist) :greedy))
-                       (splitted (split-string fname proto))
-                       (result (if greedy restoffiles (cadr splitted))))
+                       (split (split-string fname proto))
+                       (result (if greedy restoffiles (cadr split))))
                   (when (plist-get (cdr prolist) :kill-client)
 		    (message "Greedy org-protocol handler. Killing client.")
 		    (server-edit))
@@ -645,5 +643,4 @@ project-plist is the CDR of an element in `org-publish-project-alist', reuse
 
 (provide 'org-protocol)
 
-;; arch-tag: b5c5c2ac-77cf-4a94-a649-2163dff95846
 ;;; org-protocol.el ends here

@@ -1,12 +1,11 @@
 ;;; org-entities.el --- Support for special entities in Org-mode
 
-;; Copyright (C) 2010 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2012 Free Software Foundation, Inc.
 
 ;; Author: Carsten Dominik <carsten at orgmode dot org>,
 ;;         Ulf Stegemann <ulf at zeitform dot de>
 ;; Keywords: outlines, calendar, wp
 ;; Homepage: http://orgmode.org
-;; Version: 7.7
 ;;
 ;; This file is part of GNU Emacs.
 ;;
@@ -45,6 +44,7 @@
 For example, this will replace \"\\nsup\" with \"[not a superset of]\"
 in backends where the corresponding character is not available."
   :group 'org-entities
+  :version "24.1"
   :type 'boolean)
 
 (defcustom org-entities-user nil
@@ -69,6 +69,7 @@ utf-8 replacement    Use the special characters available in utf-8.
 If you define new entities here that require specific LaTeX packages to be
 loaded, add these packages to `org-export-latex-packages-alist'."
   :group 'org-entities
+  :version "24.1"
   :type '(repeat
 	  (list
 	   (string :tag "name  ")
@@ -567,7 +568,5 @@ Kind can be any of `latex', `html', `ascii', `latin1', or `utf8'."
 ;; Local variables:
 ;; coding: utf-8
 ;; End:
-
-;; arch-tag: e6bd163f-7419-4009-9c93-a74623016424
 
 ;;; org-entities.el ends here

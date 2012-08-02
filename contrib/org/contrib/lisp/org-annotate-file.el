@@ -1,6 +1,6 @@
 ;;; org-annotate-file.el --- Annotate a file with org syntax
 
-;; Copyright (C) 2008 Philip Jackson
+;; Copyright (C) 2008-2012 Philip Jackson
 
 ;; Author: Philip Jackson <phil@shellarchive.co.uk>
 ;; Version: 0.2
@@ -99,7 +99,7 @@ show the relevant section"
                        (concat "file:" filename "::" line)
                                (org-annotate-file-elipsify-desc line))))
     (with-current-buffer (find-file org-annotate-file-storage-file)
-      (unless (org-mode-p)
+      (unless (eq major-mode 'org-mode)
         (org-mode))
       (goto-char (point-min))
       (widen)
@@ -127,4 +127,5 @@ show the relevant section"
   (insert link))
 
 (provide 'org-annotate-file)
+
 ;;; org-annotate-file.el ends here

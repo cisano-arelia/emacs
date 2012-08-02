@@ -1,6 +1,6 @@
 ;; org-export-generic.el --- Export frameworg with custom backends
 
-;; Copyright (C) 2009  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2012  Free Software Foundation, Inc.
 
 ;; Author:   Wes Hardaker <hardaker at users dot sourceforge dot net>
 ;; Keywords: outlines, hypermedia, calendar, wp, export
@@ -35,7 +35,7 @@
 ;; org-set-generic-type function:
 ;;
 ;;    (org-set-generic-type
-;;     "really-basic-text" 
+;;     "really-basic-text"
 ;;     '(:file-suffix  ".txt"
 ;;       :key-binding  ?R
 ;;
@@ -87,7 +87,9 @@
 ;;     *** allow different open/closing prefixes
 ;;   * properties
 ;;   * drawers
-;;   * oh my
+;;   * Escape camel-case for wiki exporters.
+;;   * Adjust to depth limits on headers --- need to roll-over from headers
+;;     to lists, as per other exporters
 ;;   * optmization (many plist extracts should be in let vars)
 ;;   * define defcustom spec for the specifier list
 ;;   * fonts:  at least monospace is not handled at all here.
@@ -153,10 +155,10 @@ in this way, it will be wrapped."
 
      :toc-section-numbers       t
      :toc-section-number-format "\#(%s) "
-     :toc-format                "--%s--"    
+     :toc-format                "--%s--"
      :toc-format-with-todo      "!!%s!!\n"
-     :toc-indent-char           ?\ 
-     :toc-indent-depth          4         
+     :toc-indent-char           ?\
+     :toc-indent-depth          4
 
      :toc-tags-export           t
      :toc-tags-prefix           "   <tags>"
@@ -187,8 +189,8 @@ in this way, it will be wrapped."
 					; section prefixes/suffixes can be direct strings or lists as well
      :body-section-prefix         "<secprefix>\n"
      :body-section-suffix         "</secsuffix>\n"
-;	 :body-section-prefix         ("<sec1>\n" "<sec2>\n" "<sec3>\n")
-;	 :body-section-suffix         ("</sec1>\n" "</sec2>\n" "</sec3>\n")
+					;	 :body-section-prefix         ("<sec1>\n" "<sec2>\n" "<sec3>\n")
+					;	 :body-section-suffix         ("</sec1>\n" "</sec2>\n" "</sec3>\n")
 
 
 					; if preformated text should be included (eg, : prefixed)
@@ -215,7 +217,7 @@ in this way, it will be wrapped."
      :body-list-checkbox-half-end  "</checkbox (half)>"
 
 
-     
+
 
 					; other body lines
      :body-line-format             "%s"
@@ -255,36 +257,36 @@ in this way, it will be wrapped."
      :toc-export                t
      :toc-section-numbers       t
      :toc-section-number-format "%s "
-     :toc-format                "%s\n"    
+     :toc-format                "%s\n"
      :toc-format-with-todo      "%s (*)\n"
-     :toc-indent-char           ?\ 
-     :toc-indent-depth          4         
+     :toc-indent-char           ?\
+     :toc-indent-depth          4
 
      :body-header-section-numbers 3
      :body-section-prefix         "\n"
 
-;	 :body-section-header-prefix  "\n"
-;	 :body-section-header-format  "%s\n"
-;	 :body-section-header-suffix  (?\$ ?\# ?^ ?\~ ?\= ?\-)
+					;	 :body-section-header-prefix  "\n"
+					;	 :body-section-header-format  "%s\n"
+					;	 :body-section-header-suffix  (?\$ ?\# ?^ ?\~ ?\= ?\-)
 
      :body-section-header-prefix  ("" "" "" "* " "  + " "    - ")
      :body-section-header-format  "%s\n"
      :body-section-header-suffix  (?~ ?= ?- "\n" "\n" "\n")
 
-;	 :body-section-marker-prefix  ""
-;	 :body-section-marker-chars   (?\$ ?\# ?^ ?\~ ?\= ?\-)
-;	 :body-section-marker-suffix  "\n"
+					;	 :body-section-marker-prefix  ""
+					;	 :body-section-marker-chars   (?\$ ?\# ?^ ?\~ ?\= ?\-)
+					;	 :body-section-marker-suffix  "\n"
 
      :body-line-export-preformated t
      :body-line-format             "%s\n"
      :body-line-wrap               75
 
-;	 :body-text-prefix "<t>\n"
-;	 :body-text-suffix "</t>\n"
+					;	 :body-text-prefix "<t>\n"
+					;	 :body-text-suffix "</t>\n"
 
 
      :body-bullet-list-prefix      (?* ?+ ?-)
-;	 :body-bullet-list-suffix      (?* ?+ ?-)
+					;	 :body-bullet-list-suffix      (?* ?+ ?-)
      )
 
     ;;
@@ -308,7 +310,7 @@ in this way, it will be wrapped."
 
      :body-section-header-prefix    ("= " "== " "=== "
 				     "==== " "===== " "====== ")
-     :body-section-header-suffix    (" =\n\n" " ==\n\n" " ===\n\n" 
+     :body-section-header-suffix    (" =\n\n" " ==\n\n" " ===\n\n"
 				     " ====\n\n" " =====\n\n" " ======\n\n")
 
      :body-line-export-preformated  t          ;; yes/no/maybe???
@@ -322,47 +324,6 @@ in this way, it will be wrapped."
 
      :body-bullet-list-prefix       ("* " "** " "*** " "**** " "***** ")
      )
-
-    ;;
-    ;; minimal html exporter
-    ;;
-    ("html"
-     ;; simple html output
-     :file-suffix        	    ".html"
-     :key-binding                   ?h
-
-     :header-prefix             "<body>"
-
-     :title-format              "<h1>%s</h1>\n\n"
-
-     :date-export        	    t
-     :date-format               "<br /><b>Date:</b> <i>%s</i><br />\n\n"
-
-     :toc-export                nil
-
-     :body-header-section-numbers 3
-
-     :body-section-header-prefix  ("<h1>" "<h2>" "<h3>"
-				   "<h4>" "<h5>" "<h6>")
-     :body-section-header-format  "%s"
-     :body-section-header-suffix  ("</h1>\n" "</h2>\n" "</h3>\n"
-				   "</h4>\n" "</h5>\n" "</h6>\n")
-
-     :body-section-prefix         "<secprefix>\n"
-     :body-section-suffix         "</secsuffix>\n"
-;	 :body-section-prefix         ("<sec1>\n" "<sec2>\n" "<sec3>\n")
-;	 :body-section-suffix         ("</sec1>\n" "</sec2>\n" "</sec3>\n")
-
-     :body-line-export-preformated t
-     :body-line-format             "%s\n"
-
-     :body-text-prefix "<p>\n"
-     :body-text-suffix "</p>\n"
-
-     :body-bullet-list-prefix      (?* ?+ ?-)
-;	 :body-bullet-list-suffix      (?* ?+ ?-)
-     )
-
     ;;
     ;; internet-draft .xml for xml2rfc exporter
     ;;
@@ -429,6 +390,85 @@ in this way, it will be wrapped."
      :body-list-format 	       "<t>%s</t>\n"
 
      )
+    ("trac-wiki"
+     :file-suffix     ".txt"
+     :key-binding     ?T
+
+     ;; lifted from wikipedia exporter
+     :header-prefix            	    ""
+     :header-suffix            	    ""
+
+     :title-format             	    "= %s =\n"
+
+     :date-export        	    nil
+
+     :toc-export                    nil
+
+     :body-header-section-numbers   nil
+     :body-section-prefix           "\n"
+
+     :body-section-header-prefix    (" == " " === " " ==== "
+				     " ===== " )
+     :body-section-header-suffix    (" ==\n\n" " ===\n\n" " ====\n\n"
+				     " =====\n\n" " ======\n\n" " =======\n\n")
+
+     :body-line-export-preformated  t ;; yes/no/maybe???
+     :body-line-format              "%s\n"
+     :body-line-wrap                75
+
+     :body-line-fixed-format       " %s\n"
+
+     :body-list-format              " * %s\n"
+     :body-number-list-format       " # %s\n"
+     ;;    :body-list-prefix              "LISTSTART"
+     ;;    :body-list-suffix              "LISTEND"
+
+     ;; this is ignored! [2010/02/02:rpg]
+     :body-bullet-list-prefix       ("* " "** " "*** " "**** " "***** ")
+     )
+    ("tikiwiki"
+     :file-suffix     ".txt"
+     :key-binding     ?U
+
+     ;; lifted from wikipedia exporter
+     :header-prefix            	    ""
+     :header-suffix            	    ""
+
+     :title-format             	    "-= %s =-\n"
+
+     :date-export        	    nil
+
+     :toc-export                    nil
+
+     :body-header-section-numbers   nil
+     :body-section-prefix           "\n"
+
+     :body-section-header-prefix    ("! " "!! " "!!! " "!!!! "
+				     "!!!!! " "!!!!!! " "!!!!!!! ")
+     :body-section-header-suffix    (" \n" " \n" " \n"
+				     " \n" " \n" " \n")
+
+
+     :body-line-export-preformated  t ;; yes/no/maybe???
+     :body-line-format              "%s "
+     :body-line-wrap                nil
+
+     :body-line-fixed-format       " %s\n"
+
+     :body-list-format              "* %s\n"
+     :body-number-list-format       "# %s\n"
+     ;;    :body-list-prefix              "LISTSTART"
+     ;;    :body-list-suffix              "LISTEND"
+     :blockquote-start              "\n^\n"
+     :blockquote-end                "^\n\n"
+     :body-newline-paragraph        "\n"
+     :bold-format                   "__%s__"
+     :italic-format                 "''%s''"
+     :underline-format              "===%s==="
+     :strikethrough-format          "--%s--"
+     :code-format                   "-+%s+-"
+     :verbatim-format               "~pp~%s~/pp~"
+     )
     )
   "A assoc list of property lists to specify export definitions"
 )
@@ -458,12 +498,12 @@ the body of an org-set-generic-type definition."
      ))
 
 (def-org-export-generic-keyword :body-newline-paragraph
-    :documentation "Bound either to NIL or to a pattern to be 
+    :documentation "Bound either to NIL or to a pattern to be
 inserted in the output for every blank line in the input.
   The intention is to handle formats where text is flowed, and
 newlines are interpreted as significant \(e.g., as indicating
 preformatted text\).  A common non-nil value for this keyword
-is \"\\n\".  Should typically be combined with a value for 
+is \"\\n\".  Should typically be combined with a value for
 :body-line-format that does NOT end with a newline."
     :type string)
 
@@ -475,8 +515,8 @@ is \"\\n\".  Should typically be combined with a value for
 (def-org-export-generic-keyword :code-format)
 (def-org-export-generic-keyword :verbatim-format)
 
-    
-  
+
+
 
 (defun org-export-generic-remember-section (type suffix &optional prefix)
   (setq org-export-generic-section-type type)
@@ -529,7 +569,7 @@ underlined headlines.  The default is 3."
 			      (org-export-add-subtree-options opt-plist rbeg)
 			    opt-plist)))
 
-	 helpstart 
+	 helpstart
 	 (bogus (mapc (lambda (x)
 			(setq helpstart
 			      (concat helpstart "\["
@@ -571,7 +611,7 @@ underlined headlines.  The default is 3."
 	    (unless (setq ass (cadr (assq r2 cmds)))
 	      (error "No command associated with key %c" r1))
 
-	    (cdr (assoc 
+	    (cdr (assoc
 		  (if (equal ass "default") org-generic-export-type ass)
 		  org-generic-alist))))
 
@@ -617,6 +657,7 @@ underlined headlines.  The default is 3."
 	  (buffer-substring
 	   (if (org-region-active-p) (region-beginning) (point-min))
 	   (if (org-region-active-p) (region-end) (point-max))))
+	 (org-export-current-backend 'org-export-generic)
 	 (lines (org-split-string
 		 (org-export-preprocess-string
 		  region
@@ -691,11 +732,11 @@ underlined headlines.  The default is 3."
          (format-code (plist-get export-plist :code-format))
          (format-verbatim (plist-get export-plist :verbatim-format))
 
-         
+
 
 	 thetoc toctags have-headings first-heading-pos
 	 table-open table-buffer link-buffer link desc desc0 rpl wrap)
-    
+
     (let ((inhibit-read-only t))
       (org-unmodified
        (remove-text-properties (point-min) (point-max)
@@ -800,7 +841,7 @@ underlined headlines.  The default is 3."
 				(org-re "[ \t]+:\\([[:alnum:]_@:]+\\):[ \t]*$")
 				txt)
 			       (progn
-				 (setq 
+				 (setq
 				  toctags
 				  (org-export-generic-header
 				   (match-string 1 txt)
@@ -811,7 +852,7 @@ underlined headlines.  The default is 3."
 				  txt)
 				 (setq txt (replace-match "" t t txt)))
 			     (setq toctags tocnotagsstr)))
-			   
+
 			 (if (string-match quote-re0 txt)
 			     (setq txt (replace-match "" t t txt)))
 
@@ -830,7 +871,7 @@ underlined headlines.  The default is 3."
 				   "")
 
 				 (format
-				  (if todo tocformtodo tocformat) 
+				  (if todo tocformtodo tocformat)
 				  txt)
 
 				 toctags)
@@ -867,7 +908,7 @@ underlined headlines.  The default is 3."
 				      (substring link 8)
 				      org-export-code-refs)))
 			t t line))
-	  (setq rpl (concat "[" 
+	  (setq rpl (concat "["
 			    (or (match-string 3 line) (match-string 1 line))
 			    "]"))
 	  (when (and desc0 (not (equal desc0 link)))
@@ -1002,7 +1043,7 @@ underlined headlines.  The default is 3."
 	;;
 	(org-export-generic-check-section "body" bodytextpre bodytextsuf)
 
-        (setq line 
+        (setq line
               (org-export-generic-fontify line))
 
 	;; XXX: properties?  list?
@@ -1167,7 +1208,7 @@ REVERSE means to reverse the list if the plist match is a list
 	(setq result (concat result line))
 	(setq len 0)))
     (concat result indstr line)))
-			   
+
 (defun org-export-generic-push-links (link-buffer)
   "Push out links in the buffer."
   (when link-buffer
@@ -1217,13 +1258,13 @@ REVERSE means to reverse the list if the plist match is a list
 	))
      ;; same level
      ((= level old-level)
-      (insert 
+      (insert
        (org-export-generic-format export-plist :body-section-suffix 0 level))
       )
      )
     (insert
      (org-export-generic-format export-plist :body-section-prefix 0 level))
-    
+
     (if (and org-export-with-section-numbers
 	     secnums
 	     (or (not (numberp secnums))
@@ -1324,7 +1365,7 @@ REVERSE means to reverse the list if the plist match is a list
 Each element of the list is a list of three elements.
 The first element is the character used as a marker for fontification.
 The second element is a variable name, set in org-export-generic.  That
-variable will be dereferenced to obtain a formatting string to wrap 
+variable will be dereferenced to obtain a formatting string to wrap
 fontified text with.
 The third element decides whether to protect converted text from other
 conversions.")

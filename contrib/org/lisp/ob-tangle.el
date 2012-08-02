@@ -1,11 +1,10 @@
 ;;; ob-tangle.el --- extract source code from org-mode files
 
-;; Copyright (C) 2009, 2010  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2012  Free Software Foundation, Inc.
 
 ;; Author: Eric Schulte
 ;; Keywords: literate programming, reproducible research
 ;; Homepage: http://orgmode.org
-;; Version: 7.7
 
 ;; This file is part of GNU Emacs.
 
@@ -48,6 +47,7 @@ be inserted as the extension commonly used to identify files
 written in this language.  If no entry is found in this list,
 then the name of the language is used."
   :group 'org-babel-tangle
+  :version "24.1"
   :type '(repeat
 	  (cons
 	   (string "Language name")
@@ -56,16 +56,19 @@ then the name of the language is used."
 (defcustom org-babel-post-tangle-hook nil
   "Hook run in code files tangled by `org-babel-tangle'."
   :group 'org-babel
+  :version "24.1"
   :type 'hook)
 
 (defcustom org-babel-pre-tangle-hook '(save-buffer)
   "Hook run at the beginning of `org-babel-tangle'."
   :group 'org-babel
+  :version "24.1"
   :type 'hook)
 
 (defcustom org-babel-tangle-body-hook nil
   "Hook run over the contents of each code block body."
   :group 'org-babel
+  :version "24.1"
   :type 'hook)
 
 (defcustom org-babel-tangle-comment-format-beg "[[%link][%source-name]]"
@@ -80,6 +83,7 @@ information into the output using `org-fill-template'.
 Whether or not comments are inserted during tangling is
 controlled by the :comments header argument."
   :group 'org-babel
+  :version "24.1"
   :type 'string)
 
 (defcustom org-babel-tangle-comment-format-end "%source-name ends here"
@@ -94,7 +98,17 @@ information into the output using `org-fill-template'.
 Whether or not comments are inserted during tangling is
 controlled by the :comments header argument."
   :group 'org-babel
+  :version "24.1"
   :type 'string)
+
+(defcustom org-babel-process-comment-text #'org-babel-trim
+  "Function called to process raw Org-mode text collected to be
+inserted as comments in tangled source-code files.  The function
+should take a single string argument and return a string
+result.  The default value is `org-babel-trim'."
+  :group 'org-babel
+  :version "24.1"
+  :type 'function)
 
 (defun org-babel-find-file-noselect-refresh (file)
   "Find file ensuring that the latest changes on disk are
@@ -119,6 +133,7 @@ evaluating BODY."
 	 (setf ,temp-result (progn ,@body)))
        (unless ,visited-p (kill-buffer ,temp-file))
        ,temp-result)))
+(def-edebug-spec org-babel-with-temp-filebuffer (form body))
 
 ;;;###autoload
 (defun org-babel-load-file (file)
@@ -177,9 +192,11 @@ exported source code blocks by language."
   (when only-this-block
     (unless (org-babel-where-is-src-block-head)
       (error "Point is not currently inside of a code block"))
-    (unless target-file
-      (setq target-file
-	    (read-from-minibuffer "Tangle to: " (buffer-file-name))))
+    (save-match-data
+      (unless (or (cdr (assoc :tangle (nth 2 (org-babel-get-src-block-info))))
+		  target-file)
+	(setq target-file
+	      (read-from-minibuffer "Tangle to: " (buffer-file-name)))))
     (narrow-to-region (match-beginning 0) (match-end 0)))
   (save-excursion
     (let ((block-counter 0)
@@ -345,16 +362,20 @@ code blocks by language."
 		    (when (or (string= "both" (cdr (assoc :comments params)))
 			      (string= "org" (cdr (assoc :comments params))))
 		      ;; from the previous heading or code-block end
-		      (buffer-substring
-		       (max (condition-case nil
-				(save-excursion
-				  (org-back-to-heading t) (point))
-			      (error 0))
-			    (save-excursion
-			      (re-search-backward
-			       org-babel-src-block-regexp nil t)
-			      (match-end 0)))
-		       (point))))
+		      (funcall
+		       org-babel-process-comment-text
+		       (buffer-substring
+			(max (condition-case nil
+				 (save-excursion
+				   (org-back-to-heading t)  ; sets match data
+				   (match-end 0))
+			       (error (point-min)))
+			     (save-excursion
+			       (if (re-search-backward
+				    org-babel-src-block-regexp nil t)
+				   (match-end 0)
+				 (point-min))))
+			(point)))))
 		   by-lang)
 	      ;; add the spec for this block to blocks under it's language
 	      (setq by-lang (cdr (assoc src-lang blocks)))
@@ -381,7 +402,7 @@ form
   (start-line file link source-name params body comment)"
   (let* ((start-line (nth 0 spec))
 	 (file (nth 1 spec))
-	 (link (org-link-escape (nth 2 spec)))
+	 (link (nth 2 spec))
 	 (source-name (nth 3 spec))
 	 (body (nth 5 spec))
 	 (comment (nth 6 spec))
@@ -396,12 +417,11 @@ form
 				     (eval el))))
 			    '(start-line file link source-name))))
     (flet ((insert-comment (text)
-            (let ((text (org-babel-trim text)))
-	      (when (and comments (not (string= comments "no"))
-			 (> (length text) 0))
-		(when padline (insert "\n"))
-		(comment-region (point) (progn (insert text) (point)))
-		(end-of-line nil) (insert "\n")))))
+            (when (and comments (not (string= comments "no"))
+		       (> (length text) 0))
+	      (when padline (insert "\n"))
+	      (comment-region (point) (progn (insert text) (point)))
+	      (end-of-line nil) (insert "\n"))))
       (when comment (insert-comment comment))
       (when link-p
 	(insert-comment
@@ -494,6 +514,6 @@ which enable the original code blocks to be found."
 
 (provide 'ob-tangle)
 
-;; arch-tag: 413ced93-48f5-4216-86e4-3fc5df8c8f24
+
 
 ;;; ob-tangle.el ends here

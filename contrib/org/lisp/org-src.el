@@ -1,14 +1,12 @@
 ;;; org-src.el --- Source code examples in Org
 ;;
-;; Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
-;;   Free Software Foundation, Inc.
+;; Copyright (C) 2004-2012 Free Software Foundation, Inc.
 ;;
 ;; Author: Carsten Dominik <carsten at orgmode dot org>
-;;	   Bastien Guerry <bzg AT altern DOT org>
+;;	   Bastien Guerry <bzg AT gnu DOT org>
 ;;         Dan Davison <davison at stats dot ox dot ac dot uk>
 ;; Keywords: outlines, hypermedia, calendar, wp
 ;; Homepage: http://orgmode.org
-;; Version: 7.7
 ;;
 ;; This file is part of GNU Emacs.
 ;;
@@ -43,8 +41,10 @@
 (declare-function org-at-table.el-p "org" ())
 (declare-function org-get-indentation "org" (&optional line))
 (declare-function org-switch-to-buffer-other-window "org" (&rest args))
-(declare-function org-pop-to-buffer-same-window 
+(declare-function org-pop-to-buffer-same-window
 		  "org-compat" (&optional buffer-or-name norecord label))
+(declare-function org-strip-protective-commas "org" (beg end))
+(declare-function org-base-buffer "org" (buffer))
 
 (defcustom org-edit-src-region-extra nil
   "Additional regexps to identify regions for editing with `org-edit-src-code'.
@@ -155,7 +155,8 @@ but which mess up the display of a snippet in Org exported files.")
 (defcustom org-src-lang-modes
   '(("ocaml" . tuareg) ("elisp" . emacs-lisp) ("ditaa" . artist)
     ("asymptote" . asy) ("dot" . fundamental) ("sqlite" . sql)
-    ("calc" . fundamental) ("C" . c))
+    ("calc" . fundamental) ("C" . c) ("cpp" . c++)
+    ("screen" . shell-script))
   "Alist mapping languages to their major mode.
 The key is the language name, the value is the string that should
 be inserted as the name of the major mode.  For many languages this is
@@ -213,16 +214,16 @@ buffer."
   (interactive)
   (unless (eq context 'save)
     (setq org-edit-src-saved-temp-window-config (current-window-configuration)))
-  (let ((mark (and (org-region-active-p) (mark)))
-	(case-fold-search t)
-	(info (org-edit-src-find-region-and-lang))
-	(full-info (org-babel-get-src-block-info))
-	(org-mode-p (or (org-mode-p) (derived-mode-p 'org-mode)))
-	(beg (make-marker))
-	(end (make-marker))
-	(allow-write-back-p (null code))
-	block-nindent total-nindent ovl lang lang-f single lfmt buffer msg
-	begline markline markcol line col transmitted-variables)
+  (let* ((mark (and (org-region-active-p) (mark)))
+	 (case-fold-search t)
+	 (info (org-edit-src-find-region-and-lang))
+	 (full-info (org-babel-get-src-block-info 'light))
+	 (org-mode-p (derived-mode-p 'org-mode)) ;; derived-mode-p is reflexive
+	 (beg (make-marker))
+	 (end (make-marker))
+	 (allow-write-back-p (null code))
+	 block-nindent total-nindent ovl lang lang-f single lfmt buffer msg
+	 begline markline markcol line col transmitted-variables)
     (if (not info)
 	nil
       (setq beg (move-marker beg (nth 0 info))
@@ -308,11 +309,13 @@ buffer."
 	     (error "Language mode `%s' fails with: %S" lang-f (nth 1 e)))))
 	(dolist (pair transmitted-variables)
 	  (org-set-local (car pair) (cadr pair)))
-	(when org-mode-p
-	  (goto-char (point-min))
-	  (while (re-search-forward "^," nil t)
-	    (if (eq (org-current-line) line) (setq total-nindent (1+ total-nindent)))
-	    (replace-match "")))
+	(if (eq major-mode 'org-mode)
+	    (progn
+	      (goto-char (point-min))
+	      (while (re-search-forward "^," nil t)
+		(if (eq (org-current-line) line) (setq total-nindent (1+ total-nindent)))
+		(replace-match "")))
+	  (org-strip-protective-commas (point-min) (point-max)))
 	(when markline
 	  (org-goto-line (1+ (- markline begline)))
 	  (org-move-to-column
@@ -371,6 +374,15 @@ buffer."
   "Construct the buffer name for a source editing buffer."
   (concat "*Org Src " org-buffer-name "[ " lang " ]*"))
 
+(defun org-src-edit-buffer-p (&optional buffer)
+  "Test whether BUFFER (or the current buffer if BUFFER is nil)
+is a source block editing buffer."
+  (let ((buffer (org-base-buffer (or buffer (current-buffer)))))
+    (and (buffer-name buffer)
+	 (string-match "\\`*Org Src " (buffer-name buffer))
+	 (local-variable-p 'org-edit-src-beg-marker buffer)
+	 (local-variable-p 'org-edit-src-end-marker buffer))))
+
 (defun org-edit-src-find-buffer (beg end)
   "Find a source editing buffer that is already editing the region BEG to END."
   (catch 'exit
@@ -400,7 +412,7 @@ the fragment in the Org-mode buffer."
 	(case-fold-search t)
 	(msg (substitute-command-keys
 	      "Edit, then exit with C-c ' (C-c and single quote)"))
-	(org-mode-p (org-mode-p))
+	(org-mode-p (eq major-mode 'org-mode))
 	(beg (make-marker))
 	(end (make-marker))
 	(preserve-indentation org-src-preserve-indentation)
@@ -619,7 +631,7 @@ the language, a switch telling if the content should be in a single line."
       (when (org-bound-and-true-p org-edit-src-from-org-mode)
 	(goto-char (point-min))
 	(while (re-search-forward
-		(if (org-mode-p) "^\\(.\\)" "^\\([*]\\|[ \t]*#\\+\\)") nil t)
+		(if (eq major-mode 'org-mode) "^\\(.\\)" "^\\([*]\\|[ \t]*#\\+\\)") nil t)
 	  (if (eq (org-current-line) line) (setq delta (1+ delta)))
 	  (replace-match ",\\1")))
       (when (org-bound-and-true-p org-edit-src-picture)
@@ -718,6 +730,7 @@ the language, a switch telling if the content should be in a single line."
 	 (with-current-buffer (marker-buffer beg-marker)
 	   (goto-char (marker-position beg-marker))
 	   ,@body))))
+(def-edebug-spec org-src-do-at-code-block (body))
 
 (defun org-src-do-key-sequence-at-code-block (&optional key)
   "Execute key sequence at code block in the source Org buffer.
@@ -748,6 +761,7 @@ Org-babel commands."
   "If non-nil, the effect of TAB in a code block is as if it were
 issued in the language major mode buffer."
   :type 'boolean
+  :version "24.1"
   :group 'org-babel)
 
 (defun org-src-native-tab-command-maybe ()
@@ -814,5 +828,4 @@ LANG is a string, and the returned major mode is a symbol."
 
 (provide 'org-src)
 
-;; arch-tag: 6a1fc84f-dec7-47be-a416-64be56bea5d8
 ;;; org-src.el ends here

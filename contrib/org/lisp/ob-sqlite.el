@@ -1,11 +1,10 @@
 ;;; ob-sqlite.el --- org-babel functions for sqlite database interaction
 
-;; Copyright (C) 2010  Free Software Foundation
+;; Copyright (C) 2010-2012  Free Software Foundation, Inc.
 
 ;; Author: Eric Schulte
 ;; Keywords: literate programming, reproducible research
 ;; Homepage: http://orgmode.org
-;; Version: 7.7
 
 ;; This file is part of GNU Emacs.
 
@@ -94,7 +93,14 @@ This function is called by `org-babel-execute-src-block'."
 	      (member "code" result-params)
 	      (equal (point-min) (point-max)))
 	  (buffer-string)
-	(org-table-convert-region (point-min) (point-max))
+	(org-table-convert-region (point-min) (point-max)
+				  (if (or (member :csv others)
+					  (member :column others)
+					  (member :line others)
+					  (member :list others)
+					  (member :html others) separator)
+				      nil
+				    '(4)))
 	(org-babel-sqlite-table-or-scalar
 	 (org-babel-sqlite-offset-colnames
 	  (org-table-to-lisp) headers-p))))))
@@ -145,6 +151,6 @@ Prepare SESSION according to the header arguments specified in PARAMS."
 
 (provide 'ob-sqlite)
 
-;; arch-tag: 5c03d7f2-0f72-48b8-bbd1-35aafea248ac
+
 
 ;;; ob-sqlite.el ends here

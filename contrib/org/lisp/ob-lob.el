@@ -1,11 +1,11 @@
 ;;; ob-lob.el --- functions supporting the Library of Babel
 
-;; Copyright (C) 2009, 2010  Free Software Foundation, Inc.
+;; Copyright (C) 2009-2012  Free Software Foundation, Inc.
 
-;; Author: Eric Schulte, Dan Davison
+;; Authors: Eric Schulte
+;;	 Dan Davison
 ;; Keywords: literate programming, reproducible research
 ;; Homepage: http://orgmode.org
-;; Version: 7.7
 
 ;; This file is part of GNU Emacs.
 
@@ -28,6 +28,8 @@
 (require 'ob)
 (require 'ob-table)
 
+(declare-function org-babel-in-example-or-verbatim "ob-exp" nil)
+
 (defvar org-babel-library-of-babel nil
   "Library of source-code blocks.
 This is an association list.  Populate the library by adding
@@ -37,6 +39,7 @@ files to `org-babel-lob-files'.")
   "Files used to populate the `org-babel-library-of-babel'.
 To add files to this list use the `org-babel-lob-ingest' command."
   :group 'org-babel
+  :version "24.1"
   :type 'list)
 
 (defvar org-babel-default-lob-header-args '((:exports . "results"))
@@ -61,25 +64,16 @@ To add files to this list use the `org-babel-lob-ingest' command."
 	     lob-ingest-count (if (> lob-ingest-count 1) "s" ""))
     lob-ingest-count))
 
-(defconst org-babel-lob-call-aliases '("lob" "call")
-  "Aliases to call a source block function.
-If you change the value of this variable then your files may
-  become unusable by other org-babel users, and vice versa.")
-
 (defconst org-babel-block-lob-one-liner-regexp
   (concat
-   "^\\([ \t]*\\)#\\+\\(?:"
-   (mapconcat #'regexp-quote org-babel-lob-call-aliases "\\|")
-   "\\):[ \t]+\\([^\(\)\n]+?\\)\\(\\[\\(.*\\)\\]\\|\\(\\)\\)"
-   "\(\\([^\n]*\\)\)\\(\\[.+\\]\\|\\)[ \t]*\\(\\([^\n]*\\)\\)?")
+   "^\\([ \t]*?\\)#\\+call:[ \t]+\\([^\(\)\n]+?\\)\\(\\[\\(.*\\)\\]\\|\\(\\)\\)"
+   "\(\\([^\n]*?\\)\)\\(\\[.+\\]\\|\\)[ \t]*\\(\\([^\n]*\\)\\)?")
   "Regexp to match non-inline calls to predefined source block functions.")
 
 (defconst org-babel-inline-lob-one-liner-regexp
   (concat
-   "\\([^\n]*\\)\\(?:"
-   (mapconcat #'regexp-quote org-babel-lob-call-aliases "\\|")
-   "\\)_\\([^\(\)\n]+?\\)\\(\\[\\(.*\\)\\]\\|\\(\\)\\)"
-   "\(\\([^\n]*\\)\)\\(\\[\\(.*?\\)\\]\\)?")
+   "\\([^\n]*?\\)call_\\([^\(\)\n]+?\\)\\(\\[\\(.*?\\)\\]\\|\\(\\)\\)"
+   "\(\\([^\n]*?\\)\)\\(\\[\\(.*?\\)\\]\\)?")
   "Regexp to match inline calls to predefined source block functions.")
 
 (defconst org-babel-lob-one-liner-regexp
@@ -88,6 +82,7 @@ If you change the value of this variable then your files may
   "Regexp to match calls to predefined source block functions.")
 
 ;; functions for executing lob one-liners
+
 ;;;###autoload
 (defun org-babel-lob-execute-maybe ()
   "Execute a Library of Babel source block, if appropriate.
@@ -95,7 +90,9 @@ Detect if this is context for a Library Of Babel source block and
 if so then run the appropriate source block from the Library."
   (interactive)
   (let ((info (org-babel-lob-get-info)))
-    (if (nth 0 info) (progn (org-babel-lob-execute info) t) nil)))
+    (if (and (nth 0 info) (not (org-babel-in-example-or-verbatim)))
+	(progn (org-babel-lob-execute info) t)
+      nil)))
 
 ;;;###autoload
 (defun org-babel-lob-get-info ()
@@ -108,24 +105,23 @@ if so then run the appropriate source block from the Library."
 	(beginning-of-line 1)
 	(when (looking-at org-babel-lob-one-liner-regexp)
 	  (append
-	   (mapcar #'org-babel-clean-text-properties 
+	   (mapcar #'org-babel-clean-text-properties
 		   (list
 		    (format "%s%s(%s)%s"
 			    (nonempty 3 12)
-			    (if (not (= 0 (length (nonempty 5 13))))
-				(concat "[" (nonempty 5 13) "]") "")
+			    (if (not (= 0 (length (nonempty 5 14))))
+				(concat "[" (nonempty 5 14) "]") "")
 			    (or (nonempty 7 16) "")
 			    (or (nonempty 8 19) ""))
 		    (nonempty 9 18)))
 	   (list (length (if (= (length (match-string 12)) 0)
 			     (match-string 2) (match-string 11))))))))))
-  
+
 (defun org-babel-lob-execute (info)
   "Execute the lob call specified by INFO."
   (let ((params (org-babel-process-params
 		 (org-babel-merge-params
 		  org-babel-default-header-args
-		  (org-babel-params-from-buffer)
 		  (org-babel-params-from-properties)
 		  (org-babel-parse-header-arguments
 		   (org-babel-clean-text-properties
@@ -136,6 +132,6 @@ if so then run the appropriate source block from the Library."
 
 (provide 'ob-lob)
 
-;; arch-tag: ce0712c9-2147-4019-ba3f-42341b8b474b
+
 
 ;;; ob-lob.el ends here

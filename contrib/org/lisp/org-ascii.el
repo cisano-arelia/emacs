@@ -1,12 +1,10 @@
 ;;; org-ascii.el --- ASCII export for Org-mode
 
-;; Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010
-;;   Free Software Foundation, Inc.
+;; Copyright (C) 2004-2012  Free Software Foundation, Inc.
 
 ;; Author: Carsten Dominik <carsten at orgmode dot org>
 ;; Keywords: outlines, hypermedia, calendar, wp
 ;; Homepage: http://orgmode.org
-;; Version: 7.7
 ;;
 ;; This file is part of GNU Emacs.
 ;;
@@ -110,7 +108,7 @@ utf8      Use all UTF-8 characters")
 (defun org-export-as-utf8 (&rest args)
   "Like `org-export-as-ascii', use encoding for special symbols."
   (interactive)
-  (org-export-as-encoding 'org-export-as-ascii 
+  (org-export-as-encoding 'org-export-as-ascii
 			  (org-called-interactively-p 'any)
 			  'utf8 args))
 
@@ -146,7 +144,7 @@ command to convert it."
   (interactive "r")
   (let (reg ascii buf pop-up-frames)
     (save-window-excursion
-      (if (org-mode-p)
+      (if (eq major-mode 'org-mode)
 	  (setq ascii (org-export-region-as-ascii
 		      beg end t 'string))
 	(setq reg (buffer-substring beg end)
@@ -285,7 +283,7 @@ publishing directory."
 		    "UNTITLED"))
 	 (email (plist-get opt-plist :email))
 	 (language (plist-get opt-plist :language))
-	 (quote-re0 (concat "^[ \t]*" org-quote-string "\\>"))
+	 (quote-re0 (concat "^\\(" org-quote-string "\\)\\( +\\|[ \t]*$\\)"))
 	 (todo nil)
 	 (lang-words nil)
 	 (region
@@ -408,7 +406,7 @@ publishing directory."
 				   txt))
 			     (setq txt (replace-match "" t t txt)))
 			 (if (string-match quote-re0 txt)
-			     (setq txt (replace-match "" t t txt)))
+			     (setq txt (replace-match "" t t txt 1)))
 
 			 (if org-export-with-section-numbers
 			     (setq txt (concat (org-section-number level)
@@ -440,7 +438,9 @@ publishing directory."
 	      link (concat (match-string 1 line) path)
 	      type (match-string 2 line)
 	      desc0 (match-string 5 line)
-	      desc (or desc0 link))
+	      desc0 (replace-regexp-in-string "\\\\_" "_" desc0)
+	      desc (or desc0 link)
+	      desc (replace-regexp-in-string "\\\\_" "_" desc))
 	(if (and (> (length link) 8)
 		 (equal (substring link 0 8) "coderef:"))
 	    (setq line (replace-match
@@ -726,5 +726,4 @@ publishing directory."
 
 (provide 'org-ascii)
 
-;; arch-tag: aa96f882-f477-4e13-86f5-70d43e7adf3c
 ;;; org-ascii.el ends here
