@@ -2,7 +2,10 @@
 ;;
 ;; Org Mobile encryption password
 (defvar gtd-org-mobile-encryption-password "aoeu")
+;; overload default paths
+(defvar conf-base-path "~/emacs/")
+(defvar gtd-base-path "~/GTD/")
 ;; load path
-(add-to-list 'load-path "~/emacs")
+(add-to-list 'load-path conf-base-path)
 ;; load
 (require 'conf-loader)
