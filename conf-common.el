@@ -16,5 +16,7 @@
 (add-hook 'before-save-hook 'whitespace-cleanup)
 ;; write as dos
 (setq-default buffer-file-coding-system 'raw-text-dos)
+;; goto line
+(global-set-key (kbd "C-x g") 'goto-line)
 ;; provide
 (provide 'conf-common)
