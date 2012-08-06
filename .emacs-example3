@@ -1,0 +1,17 @@
+;; Example .emacs
+;;
+;; Org Mobile encryption password
+(defvar gtd-org-mobile-encryption-password "aoeu")
+;; overload default paths
+(defvar conf-base-path "~/emacs/")
+(defvar gtd-base-path "~/Dropbox/Organizer/")
+;; overload default files
+(defvar gtd-file-nextactions (concat gtd-base-path "taken.org"))
+(defvar gtd-file-calendar (concat gtd-base-path "agenda.org"))
+(defvar gtd-file-projects (concat gtd-base-path "projecten.org"))
+(defvar gtd-file-someday (concat gtd-base-path "ooit.org"))
+(defvar gtd-file-anniversaries (concat gtd-base-path "adresboek.org"))
+;; load path
+(add-to-list 'load-path conf-base-path)
+;; load
+(require 'conf-loader)

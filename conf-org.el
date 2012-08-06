@@ -19,10 +19,11 @@
      ;; set archive location
      (defadvice org-extract-archive-file (after org-to-ref activate)
        (setq ad-return-value
-	     (replace-regexp-in-string "\\.org\\.gpg_archive" ".org.archive.gpg" ad-return-value)))
+	     (replace-regexp-in-string "\\.org\\.gpg_archive" ".org.archive.gpg" (replace-regexp-in-string "\\.org_archive" ".org.archive.gpg" ad-return-value))
+	     ))
      ;; contexts
      (defvar gtd-tag-alist '((:startgroup . nil)
-		  	     ("WERK" . ?w) ("THUIS" . ?t) ("WINKEL" . ?i)
+			     ("WERK" . ?w) ("THUIS" . ?t) ("WINKEL" . ?i)
 			     (:endgroup . nil)
 			     ("AGRI" . ?a) ("RIVM" . ?r) ("LOGIUS" . ?l) ("ELenI" . ?e) ))
      (setq org-tag-alist gtd-tag-alist)
