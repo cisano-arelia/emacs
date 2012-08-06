@@ -4,7 +4,7 @@
 (load-theme 'zenburn t)
 ;; font more readable (INSTALL DejaVu Sans Mono font)
 (custom-set-faces
-  '(default ((t (:inherit nil :stipple nil :background nil :foreground "#d0d0d0" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 112 :width normal :foundry "unknown" :family "DejaVu Sans Mono")))))
+  '(default ((t (:inherit nil :stipple nil :background nil :foreground nil :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 112 :width normal :foundry "unknown" :family "DejaVu Sans Mono")))))
 ;; current line highlight
 (global-hl-line-mode 1)
 ;; cursor shape by status
