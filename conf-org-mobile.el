@@ -5,9 +5,12 @@
 			     gtd-file-projects))
 ;; Set to MobileOrg directory
 (setq org-mobile-directory (concat org-directory "mobile"))
-;; Enable encryption
-(setq org-mobile-use-encryption t)
-;; Set a password
-(setq org-mobile-encryption-password gtd-org-mobile-encryption-password)
+;; is variable bound?
+(when (boundp 'gtd-org-mobile-encryption-password)
+    ;; Enable encryption
+    (setq org-mobile-use-encryption t)
+    ;; Set a password
+    (setq org-mobile-encryption-password gtd-org-mobile-encryption-password)
+)
 ;; provide
 (provide 'conf-org-mobile)

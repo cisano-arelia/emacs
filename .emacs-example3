@@ -1,7 +1,5 @@
 ;; Example .emacs
 ;;
-;; Org Mobile encryption password
-(defvar gtd-org-mobile-encryption-password "aoeu")
 ;; overload default paths
 (defvar conf-base-path "~/emacs/")
 (defvar gtd-base-path "~/Dropbox/Organizer/")
