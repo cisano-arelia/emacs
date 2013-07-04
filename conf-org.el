@@ -19,7 +19,7 @@
      ;; set archive location
      (defadvice org-extract-archive-file (after org-to-ref activate)
        (setq ad-return-value
-	     (replace-regexp-in-string "\\.org\\.gpg_archive" ".org.archive.gpg" (replace-regexp-in-string "\\.org_archive" ".org.archive.gpg" ad-return-value))
+	     (replace-regexp-in-string "\\.org\\.gpg_archive" ".org.archive.gpg" (replace-regexp-in-string "\\.org_archive" ".org.archive" ad-return-value))
 	     ))
      ;; contexts
      (defvar gtd-tag-alist '((:startgroup . nil)
